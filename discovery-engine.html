@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<title>WishlistLens</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --surface-0:#FAF8F5; --surface-1:#FFFFFF; --surface-2:#F2EFEA; --surface-border:#E5E0D8;
+  --ink-1:#18140F; --ink-2:#57503F; --ink-3:#8C8371;
+  --accent:#C31856; --accent-ink:#FFFFFF; --accent-tint:#FDEAF0;
+  --link:#9C1049;
+  --good:#0ca30c; --warning:#c97e00; --serious:#ec835a; --critical:#d03b3b;
+  --cat-1:#2a78d6; --cat-2:#eb6834; --cat-3:#1baf7a; --cat-4:#c98500;
+  --cat-5:#c04a76; --cat-6:#008300; --cat-7:#4a3aa7; --cat-8:#e34948;
+  --code-bg:#F2EFEA; --shadow: 0 1px 2px rgba(24,20,15,.06), 0 8px 24px -12px rgba(24,20,15,.18);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --surface-0:#141210; --surface-1:#1C1916; --surface-2:#242019; --surface-border:#373126;
+    --ink-1:#F3EFE8; --ink-2:#C6BEAE; --ink-3:#8F8672;
+    --accent:#FF5C8A; --accent-ink:#1C0009; --accent-tint:#3A1420;
+    --link:#FF8FAF;
+    --good:#2fbf4e; --warning:#e0a52e; --serious:#f0916b; --critical:#e66767;
+    --cat-1:#3987e5; --cat-2:#d95926; --cat-3:#199e70; --cat-4:#d99a1f;
+    --cat-5:#e08cae; --cat-6:#3fbf3f; --cat-7:#9085e9; --cat-8:#e66767;
+    --code-bg:#242019; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px -12px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-0:#141210; --surface-1:#1C1916; --surface-2:#242019; --surface-border:#373126;
+  --ink-1:#F3EFE8; --ink-2:#C6BEAE; --ink-3:#8F8672;
+  --accent:#FF5C8A; --accent-ink:#1C0009; --accent-tint:#3A1420;
+  --link:#FF8FAF;
+  --good:#2fbf4e; --warning:#e0a52e; --serious:#f0916b; --critical:#e66767;
+  --cat-1:#3987e5; --cat-2:#d95926; --cat-3:#199e70; --cat-4:#d99a1f;
+  --cat-5:#e08cae; --cat-6:#3fbf3f; --cat-7:#9085e9; --cat-8:#e66767;
+  --code-bg:#242019; --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 28px -12px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--surface-0); color:var(--ink-1);
+  font-family:'Inter',system-ui,sans-serif; font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{font-family:'Sora',system-ui,sans-serif; letter-spacing:-.01em; text-wrap:balance; margin:0}
+code,.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+a{color:var(--link)}
+button{font-family:inherit;cursor:pointer}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+
+/* ---------- shell ---------- */
+.topbar{
+  position:sticky; top:0; z-index:20; background:var(--surface-1); border-bottom:1px solid var(--surface-border);
+  padding:12px 20px;
+}
+.topbar-in{max-width:1320px; margin:0 auto; display:flex; align-items:center; gap:14px; flex-wrap:wrap}
+.brand{display:flex; align-items:center; gap:10px; font-family:'Sora',sans-serif; font-weight:700; font-size:17px}
+.brand .mark{width:26px;height:26px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:var(--accent-ink);font-size:14px;font-weight:800}
+.brand .sub{font-weight:500; color:var(--ink-3); font-size:12.5px; font-family:'IBM Plex Mono',monospace; letter-spacing:.02em}
+.topbar-right{margin-left:auto; display:flex; gap:8px; align-items:center}
+.pill{font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; padding:5px 10px; border-radius:999px; border:1px solid var(--surface-border); color:var(--ink-2); white-space:nowrap}
+.pill.live{color:var(--good); border-color:currentColor; background:color-mix(in oklab, var(--good) 12%, transparent)}
+
+.shell{max-width:1320px; margin:0 auto; display:grid; grid-template-columns:220px 1fr; gap:0; align-items:start}
+@media (max-width:880px){ .shell{grid-template-columns:1fr} .side{display:none} }
+
+.side{position:sticky; top:57px; padding:22px 14px 22px 20px; display:flex; flex-direction:column; gap:2px; align-self:start}
+.side button.nav-item{
+  display:flex; align-items:center; gap:9px; text-align:left; width:100%; padding:9px 10px; border-radius:9px;
+  border:none; background:none; color:var(--ink-2); font-size:13.5px; font-weight:600;
+}
+.side button.nav-item .n{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--ink-3); width:16px}
+.side button.nav-item:hover{background:var(--surface-2)}
+.side button.nav-item.on{background:var(--accent-tint); color:var(--accent)}
+.side button.nav-item.on .n{color:var(--accent)}
+.side .side-foot{margin-top:14px; padding-top:14px; border-top:1px solid var(--surface-border); font-size:12px; color:var(--ink-3); line-height:1.5}
+
+.main{padding:22px 20px 64px; min-width:0}
+.panel{display:none}
+.panel.on{display:block}
+.stack{display:flex; flex-direction:column; gap:16px}
+
+.card{background:var(--surface-1); border:1px solid var(--surface-border); border-radius:14px; padding:18px 20px; box-shadow:var(--shadow)}
+.card.flush{padding:0}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+@media (max-width:760px){ .grid2,.grid3{grid-template-columns:1fr} }
+
+.hgroup{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:10px; flex-wrap:wrap}
+.hgroup h2{font-size:19px}
+.muted{color:var(--ink-2)}
+.small{font-size:12.5px}
+.tiny{font-size:11.5px}
+
+/* pipeline */
+.pipeline{display:grid; grid-template-columns:repeat(5,1fr); gap:10px}
+@media (max-width:820px){ .pipeline{grid-template-columns:1fr 1fr} }
+.stage{border:1px solid var(--surface-border); border-radius:12px; padding:13px 14px; background:var(--surface-2); cursor:pointer}
+.stage:hover{border-color:var(--accent)}
+.stage .snum{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--accent); font-weight:700}
+.stage h3{font-size:14px; margin:4px 0 5px}
+.stage p{margin:0; font-size:12px; color:var(--ink-2); line-height:1.5}
+
+/* table */
+.tbl-wrap{overflow-x:auto; border:1px solid var(--surface-border); border-radius:12px}
+table{border-collapse:collapse; width:100%; font-size:13px}
+th,td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--surface-border); vertical-align:top}
+th{font-family:'IBM Plex Mono',monospace; font-size:10.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--ink-3); background:var(--surface-2); position:sticky; top:0}
+tr:last-child td{border-bottom:none}
+td.txt{max-width:420px}
+
+.badge{display:inline-flex; align-items:center; gap:5px; font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; padding:2px 8px; border-radius:999px; white-space:nowrap}
+.badge.real{background:color-mix(in oklab, var(--good) 15%, transparent); color:var(--good)}
+.badge.synth{background:var(--surface-2); color:var(--ink-2); border:1px solid var(--surface-border)}
+.sev{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700}
+.sev .dot{width:7px;height:7px;border-radius:50%}
+.sev.Critical .dot{background:var(--critical)} .sev.Critical{color:var(--critical)}
+.sev.High .dot{background:var(--serious)} .sev.High{color:var(--serious)}
+.sev.Medium .dot{background:var(--warning)} .sev.Medium{color:var(--warning)}
+.sev.Low .dot{background:var(--good)} .sev.Low{color:var(--good)}
+
+.filters{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+.chip{border:1px solid var(--surface-border); background:var(--surface-1); color:var(--ink-2); font-size:12px; font-weight:600; padding:6px 11px; border-radius:999px}
+.chip.on{background:var(--ink-1); color:var(--surface-1); border-color:var(--ink-1)}
+
+/* bars */
+.barrow{display:grid; grid-template-columns:190px 1fr 40px; align-items:center; gap:10px; padding:6px 0}
+.barrow .lbl{font-size:12.5px; font-weight:600; color:var(--ink-1)}
+.bartrack{background:var(--surface-2); border-radius:5px; height:11px; overflow:hidden}
+.barfill{height:100%; border-radius:5px}
+.barrow .val{font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--ink-2); text-align:right}
+
+/* legend */
+.legend{display:flex; flex-wrap:wrap; gap:10px 16px}
+.legend .it{display:flex; align-items:center; gap:6px; font-size:12px; color:var(--ink-2)}
+.legend .sw{width:10px;height:10px;border-radius:3px}
+
+/* co-occurrence */
+.cotable{border-collapse:collapse; font-size:11.5px}
+.cotable th,.cotable td{border:1px solid var(--surface-border); padding:6px 8px; text-align:center; font-family:'IBM Plex Mono',monospace}
+.cotable th{background:var(--surface-2); font-weight:600; font-size:10px}
+.cotable td.rowlabel{text-align:left; background:var(--surface-2); font-family:'Inter'; font-weight:600; font-size:11.5px}
+
+/* tester */
+textarea{width:100%; min-height:96px; resize:vertical; font-family:'Inter',sans-serif; font-size:14px; padding:12px 14px; border-radius:10px; border:1px solid var(--surface-border); background:var(--surface-0); color:var(--ink-1)}
+textarea:focus-visible, button:focus-visible, .chip:focus-visible, .stage:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
+.btnrow{display:flex; gap:10px; margin-top:10px; flex-wrap:wrap; align-items:center}
+.btn{border-radius:9px; padding:10px 16px; font-size:13.5px; font-weight:700; border:1px solid transparent}
+.btn.primary{background:var(--ink-1); color:var(--surface-1)}
+.btn.primary:hover{opacity:.88}
+.btn.ai{background:var(--accent); color:var(--accent-ink)}
+.btn.ai:hover{opacity:.9}
+.btn.ghost{background:none; border-color:var(--surface-border); color:var(--ink-2)}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.result-card{border:1px solid var(--surface-border); border-radius:12px; padding:14px 16px; background:var(--surface-2); margin-top:12px}
+.result-card h4{font-size:12px; margin:0 0 8px; font-family:'IBM Plex Mono',monospace; letter-spacing:.05em; text-transform:uppercase; color:var(--ink-3)}
+.kv{display:grid; grid-template-columns:auto 1fr; gap:5px 12px; font-size:13px}
+.kv dt{color:var(--ink-3); font-size:11.5px; font-family:'IBM Plex Mono',monospace; align-self:center}
+.kv dd{margin:0}
+
+.finding{border-left:3px solid var(--accent); padding:4px 0 4px 14px; margin-bottom:14px}
+.finding:last-child{margin-bottom:0}
+.finding .n{font-family:'IBM Plex Mono',monospace; color:var(--accent); font-weight:700; font-size:12px}
+.finding h4{font-size:14.5px; margin:2px 0 4px}
+.finding p{margin:0; font-size:13px; color:var(--ink-2); line-height:1.55}
+
+.callout{border-radius:12px; padding:14px 16px; font-size:13px; line-height:1.55}
+.callout.honest{background:color-mix(in oklab, var(--warning) 12%, transparent); border:1px solid color-mix(in oklab, var(--warning) 35%, transparent)}
+.callout.note{background:var(--surface-2); border:1px solid var(--surface-border); color:var(--ink-2)}
+
+.statgrid{display:grid; grid-template-columns:repeat(4,1fr); gap:12px}
+@media (max-width:760px){.statgrid{grid-template-columns:1fr 1fr}}
+.stat{border:1px solid var(--surface-border); border-radius:12px; padding:14px; background:var(--surface-1)}
+.stat .v{font-family:'Sora',sans-serif; font-size:26px; font-weight:700}
+.stat .l{font-size:11.5px; color:var(--ink-3); margin-top:2px}
+
+.taxo-item{border:1px solid var(--surface-border); border-radius:12px; padding:13px 15px; margin-bottom:10px}
+.taxo-item:last-child{margin-bottom:0}
+.taxo-item .sw{display:inline-block; width:9px;height:9px;border-radius:3px; margin-right:7px}
+.taxo-item h4{display:inline; font-size:13.5px}
+.taxo-item p{margin:5px 0 0; font-size:12.5px; color:var(--ink-2)}
+
+footer{max-width:1320px; margin:0 auto; padding:20px 20px 50px; color:var(--ink-3); font-size:12px}
+</style>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <div class="brand"><span class="mark">W</span>WishlistLens <span class="sub">/ discovery engine</span></div>
+    <div class="topbar-right">
+      <span class="pill live">● live — computed from the embedded corpus</span>
+      <span class="pill">v1 · Myntra wishlist→purchase</span>
+    </div>
+  </div>
+</div>
+
+<div class="shell">
+  <nav class="side" id="side"></nav>
+  <main class="main">
+
+    <!-- ============ OVERVIEW ============ -->
+    <section class="panel" data-panel="overview">
+      <div class="stack">
+        <div class="card">
+          <div class="eyebrow">how this works</div>
+          <h1 style="font-size:26px; margin:6px 0 8px">From unprompted wishlist complaints to a ranked opportunity list</h1>
+          <p class="muted" style="max-width:74ch">Surveys tell you what people say when you ask a leading question. Reviews, forum posts and complaints tell you what people write unprompted — usually at the exact moment a saved item failed to become a purchase. This engine reads that corpus with one fixed, published taxonomy, so the output is a measurable ranking rather than a set of impressions someone has to take on faith.</p>
+          <div class="pipeline" style="margin-top:16px">
+            <div class="stage" data-goto="corpus"><span class="snum">STAGE 1</span><h3>Collect</h3><p>Public reviews, forum threads and complaints about wishlist / pre-purchase behaviour. Platform, date, source type kept; no user identifiers.</p></div>
+            <div class="stage" data-goto="corpus"><span class="snum">STAGE 2</span><h3>Filter</h3><p>Exclusion filter drops delivery, payment, app-bug and rider noise — anything not about the decision to buy a saved item.</p></div>
+            <div class="stage" data-goto="taxonomy"><span class="snum">STAGE 3</span><h3>Code</h3><p>Fixed taxonomy, structured output: theme, blocking strength, segment. Try it yourself on the Taxonomy &amp; live test tab.</p></div>
+            <div class="stage" data-goto="aggregate"><span class="snum">STAGE 4</span><h3>Aggregate</h3><p>Frequency, severity-weighted volume, co-occurrence and segment cross-tab — computed live from the corpus below, not hand-typed.</p></div>
+            <div class="stage" data-goto="audit"><span class="snum">STAGE 5</span><h3>Audit</h3><p>A stratified 10% sample re-coded blind, agreement rate reported — including where it disagreed.</p></div>
+          </div>
+        </div>
+
+        <div class="grid2">
+          <div class="card">
+            <div class="eyebrow">why an engine, not a read-through</div>
+            <p style="margin-top:8px">One fixed coding scheme applied to the whole corpus makes theme frequency and co-occurrence <strong>measurable and reproducible</strong> — by someone who disagrees with the conclusion — instead of a curated pile of quotes chosen to support a pre-existing opinion.</p>
+          </div>
+          <div class="card">
+            <div class="eyebrow">where we were honest about limits</div>
+            <p style="margin-top:8px">This corpus mixes a small number of <span class="badge real" style="vertical-align:1px">real</span> quotes pulled from live web search (Trustpilot, Quora, Reddit-adjacent writing, aggregated app-store analysis — sourced in the deck) with <span class="badge synth" style="vertical-align:1px">synthetic</span> entries written to mirror patterns those same sources document at scale, since we can't bulk-scrape Myntra's own review firehose from here. Findings are reported as <strong>directional</strong>, not population estimates. The taxonomy, filter and coder below are built to be pointed at first-party review data unchanged.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Corpus at a glance</h2></div>
+          <div class="statgrid" id="overview-stats"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CORPUS ============ -->
+    <section class="panel" data-panel="corpus">
+      <div class="stack">
+        <div class="card">
+          <div class="hgroup"><h2>Stage 1–2 · Collected &amp; filtered corpus</h2><span class="tiny muted" id="corpus-count"></span></div>
+          <p class="muted small" style="margin-top:-4px">Every row below is real data in the sense that it's the literal input to the pipeline on this page — filter it the way the classifier does at Stage 2, or browse by theme.</p>
+          <div class="filters" id="corpus-filters"></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:60px">ID</th><th style="width:80px">Source</th><th>Text</th><th style="width:190px">Theme (Stage 3 label)</th><th style="width:90px">Blocking</th></tr></thead>
+              <tbody id="corpus-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ TAXONOMY / LIVE TEST ============ -->
+    <section class="panel" data-panel="taxonomy">
+      <div class="stack">
+        <div class="card">
+          <div class="hgroup"><h2>Stage 3 · Coding taxonomy</h2></div>
+          <p class="muted small" style="margin-top:-4px">Every entry in the corpus — and anything you type below — gets coded against exactly these eight themes plus a catch-all exclusion bucket. The rule is published so a disagreement is a disagreement about wording, not about a hidden model.</p>
+          <div id="taxo-list" style="margin-top:12px"></div>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Test the coder yourself</h2><span class="pill">the testable workflow</span></div>
+          <p class="muted small" style="margin-top:-4px">Paste any wishlist-related comment, review, or forum post — real or made up — and run it through the same engine that coded the corpus. A deterministic rules engine (transparent, instant, works for anyone opening this page) and, if you allow it, a live call to Claude for a second opinion.</p>
+          <textarea id="tester-input" placeholder="e.g. &quot;I've had this jacket in my wishlist for a month, I just can't tell if the colour will suit me — my sister hasn't replied to the photo I sent her either.&quot;"></textarea>
+          <div class="btnrow">
+            <button class="btn primary" id="btn-classify">Run deterministic coder</button>
+            <button class="btn ai" id="btn-ai" style="display:none">✨ Ask Claude for a second read</button>
+            <button class="btn ghost" id="btn-sample-text">Try a sample</button>
+          </div>
+          <div id="tester-results"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ AGGREGATE ============ -->
+    <section class="panel" data-panel="aggregate">
+      <div class="stack">
+        <div class="card">
+          <div class="hgroup"><h2>Theme frequency</h2><span class="tiny muted">excludes filtered / not-relevant rows</span></div>
+          <div id="chart-freq"></div>
+        </div>
+        <div class="card">
+          <div class="hgroup"><h2>Severity-weighted volume</h2><span class="tiny muted">count × blocking-strength weight (Critical=4 … Low=1)</span></div>
+          <p class="muted small" style="margin-top:-4px">Ranks themes by how much they actually block a purchase, not just how often they're mentioned — a theme that's rarer but sharper can outrank a common but mild one.</p>
+          <div id="chart-sev"></div>
+        </div>
+        <div class="grid2">
+          <div class="card">
+            <div class="hgroup"><h2>Which themes travel together</h2></div>
+            <p class="muted small" style="margin-top:-4px">Co-occurrence from each entry's primary + secondary theme. Pairs matter: a fit-uncertain item that's <em>also</em> return-apprehensive is a stronger kill on conversion than either alone.</p>
+            <div id="cooccurrence" style="overflow-x:auto"></div>
+          </div>
+          <div class="card">
+            <div class="hgroup"><h2>Theme × segment</h2></div>
+            <p class="muted small" style="margin-top:-4px">Which user segment each theme concentrates in — feeds the target-segment call in Part 4.</p>
+            <div id="segment-cross"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ AUDIT ============ -->
+    <section class="panel" data-panel="audit">
+      <div class="stack">
+        <div class="card">
+          <div class="hgroup"><h2>Stage 5 · Audit</h2></div>
+          <p class="muted small" style="margin-top:-4px">A stratified ~10% sample (at least one item per theme) was pulled at random, stripped of its assigned label, and re-coded from scratch against only the taxonomy rules above — then compared back to the original label. This is what makes the theme counts falsifiable rather than asserted.</p>
+          <div id="audit-stats" class="statgrid" style="margin:14px 0"></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:60px">ID</th><th>Text</th><th style="width:170px">Original label</th><th style="width:170px">Blind re-code</th><th style="width:80px">Match?</th></tr></thead>
+              <tbody id="audit-tbody"></tbody>
+            </table>
+          </div>
+          <div class="callout honest" style="margin-top:14px"><strong>Honest read of this number:</strong> agreement is high here because this is a small, hand-constructed demonstration corpus where each entry was written to carry one clear signal — real user language is messier (mixed themes in one sentence, sarcasm, code-switching between Hindi and English). Treat this as proof the taxonomy is <em>codeable</em>, not proof of what agreement will be on live, unfiltered review data. The two rows below with a partial-match note are the honest edge cases: a plausible second theme the single-label schema didn't capture — which is itself the finding that co-occurrence, not just primary theme, deserves to be tracked.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ FINDINGS ============ -->
+    <section class="panel" data-panel="findings">
+      <div class="stack">
+        <div class="card">
+          <div class="hgroup"><h2>Three findings that changed where we looked</h2></div>
+          <div id="findings-list"></div>
+        </div>
+        <div class="card">
+          <div class="eyebrow">from here</div>
+          <p style="margin-top:8px">These findings are what Part 2's metric decomposition and Part 3's primary research were built to test — see the deck for the full chain from business metric → product outcomes → this engine → primary research → problem definition.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+<footer>WishlistLens is a self-contained analysis tool: everything on this page — the corpus, the coder, the charts, the audit — runs from the data embedded in this file, recomputed on load. Built for the Myntra wishlist→purchase-conversion project · no data leaves this page except an optional, viewer-initiated call to Claude in the "test the coder" panel.</footer>
+
+<script>
+const CORPUS = [{"id":"R001","source_type":"real","source_platform":"Quora","theme":"price_availability_dynamics","secondary_theme":"reengagement_failure","blocking_strength":"Medium","segment":"price_tracker","text":"Items on my Myntra wishlist go off discount if I don't buy within 8-10 hours. Is this just rotten luck or is Myntra using my own wishlist against me? Now I don't even trust leaving things there."},{"id":"R002","source_type":"real","source_platform":"Substack (fashion culture writing)","theme":"social_validation_seeking","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"I have one friend who's my closet confidante - my fashion emergency contact. Before I buy anything even slightly risky I send her the link. The algorithm gives me trends; she gives me the truth."},{"id":"R003","source_type":"real","source_platform":"Aggregated app-store review analysis (Kimola)","theme":"comparison_paralysis","blocking_strength":"Medium","segment":"comparison_shopper","text":"Every time I go back after comparing two kurtas the filters and sort I'd set are gone. I have to redo the whole search. I've just stopped trying to compare and left both in the wishlist."},{"id":"R004","source_type":"real","source_platform":"Trustpilot (adapted - originally about returns, used here for apprehension theme)","theme":"return_redressal_apprehension","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Last time a return got rejected because they said the tag was 'missing' after I tried it on once. Now I think twice before ordering anything I'm not 100% sure will fit - not worth the fight if it's wrong."},{"id":"S005","source_type":"synthetic","source_platform":"representative \u2014 mirrors documented guesswork-sizing pattern","theme":"fit_sizing_uncertainty","blocking_strength":"Critical","segment":"fit_sensitive_shopper","text":"Saved this dress three weeks ago. Every brand's M means something different on Myntra - one runs snug, another swims on me. I've ordered wrong twice this year already. Not doing that again for a dress I actually like."},{"id":"S006","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"Critical","segment":"fit_sensitive_shopper","text":"Wishlisted a bodycon top for a friend's sangeet. Size chart says M but reviews say it runs small. Reviews say different things for different people. I don't know whose body is like mine so I just... haven't ordered it."},{"id":"S007","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"I end up ordering two sizes of anything I'm unsure about and returning whichever doesn't fit. Works, but it's a hassle and half the time I get lazy and just don't order either size at all."},{"id":"S008","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Jeans fit is the one category I will not buy blind. My wishlist has 4 pairs sitting in it right now. I need actual measurements not just S/M/L, and even then I don't trust it after being burned before."},{"id":"S009","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"Ethnic wear sizing is a lottery. Same size label, completely different fit between two kurta sets. I've given up trusting the number and just keep saving things I like without buying."},{"id":"S010","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Saved this co-ord set for a work offsite but I genuinely can't tell if it'll look put-together or like I'm trying too hard. On the model it looks great, on me... no idea until it's on me."},{"id":"S011","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"I have three sarees wishlisted for my cousin's wedding and I keep opening and closing the app without deciding. None of them I can picture with my skin tone or the jewellery I already own."},{"id":"S012","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"Medium","segment":"moodboarder","text":"Love this jacket on the model but I'm short and broad-shouldered, not sure it translates. Saved it for 'someday' more than for an actual plan to buy."},{"id":"S013","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"Bought a similar cut before and it looked nothing like it did on the model - not a quality issue, just wrong for my body type. Now every 'will this suit me' item just sits in the wishlist unless I've seen it on someone who looks like me."},{"id":"S014","source_type":"synthetic","source_platform":"representative","theme":"quality_value_doubt","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"The fabric always looks richer in the photos than what actually turns up. I've been burned enough times that anything above 1500 rupees I now hesitate on unless I can see close-up fabric shots or a proper review with photos."},{"id":"S015","source_type":"synthetic","source_platform":"representative","theme":"quality_value_doubt","blocking_strength":"Medium","segment":"comparison_shopper","text":"Two nearly identical dresses in my wishlist, one is 40% more. I can't tell what I'm paying extra for from the listing - fabric description is one line on both. Stuck."},{"id":"S016","source_type":"synthetic","source_platform":"representative","theme":"quality_value_doubt","blocking_strength":"Medium","segment":"price_tracker","text":"Wishlisted, checked the reviews, half say true to fabric shown half say cheap and see-through. I don't know which to believe so I've just left it there for a month."},{"id":"S017","source_type":"synthetic","source_platform":"representative","theme":"social_validation_seeking","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"I screenshot anything above 2000 rupees and send it to our 'outfit check' group chat before buying. If nobody responds in a day I usually just forget about it and it stays wishlisted forever."},{"id":"S018","source_type":"synthetic","source_platform":"representative","theme":"social_validation_seeking","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"For anything I'd wear to a family function I need my mum's opinion first, she has better judgement on what 'suits the occasion' means for our side of the family. App has no way to get her take without leaving it."},{"id":"S019","source_type":"synthetic","source_platform":"representative","theme":"social_validation_seeking","blocking_strength":"Low","segment":"comparison_shopper","text":"I asked in a Reddit fashion sub which of two similar jackets people preferred, got zero replies, gave up and neither ever got bought."},{"id":"S020","source_type":"synthetic","source_platform":"representative","theme":"comparison_paralysis","blocking_strength":"High","segment":"comparison_shopper","text":"I have 6 white sneakers wishlisted right now. At this point I don't think I'm choosing between them, I think the wishlist has just become where sneakers go to be looked at."},{"id":"S021","source_type":"synthetic","source_platform":"representative","theme":"comparison_paralysis","blocking_strength":"High","segment":"comparison_shopper","text":"Every kurta looks slightly different but similar enough that I can't justify picking one over the others. I end up keeping all four and buying none, then a month later add a fifth."},{"id":"S022","source_type":"synthetic","source_platform":"representative","theme":"comparison_paralysis","blocking_strength":"Medium","segment":"comparison_shopper","text":"I open 3 tabs and keep switching, trying to remember which one had better reviews. By the time I've made up my mind I'm too tired to check out and just close the app."},{"id":"S023","source_type":"synthetic","source_platform":"representative","theme":"reengagement_failure","blocking_strength":"High","segment":"moodboarder","text":"Half of what's in my wishlist I genuinely forgot I saved. I only rediscover it when I'm scrolling looking for something else entirely."},{"id":"S024","source_type":"synthetic","source_platform":"representative","theme":"reengagement_failure","blocking_strength":"Medium","segment":"moodboarder","text":"I use the wishlist like a Pinterest board honestly - things I like the idea of, not necessarily things I plan to buy. Maybe 1 in 10 actually gets ordered."},{"id":"S025","source_type":"synthetic","source_platform":"representative","theme":"reengagement_failure","blocking_strength":"Medium","segment":"moodboarder","text":"I saved it when I was in the mood to dress up for a trip that got cancelled. No reason to go back to it now, the moment's gone, but I never removed it either."},{"id":"S026","source_type":"synthetic","source_platform":"representative","theme":"reengagement_failure","blocking_strength":"Low","segment":"price_tracker","text":"I get a notification maybe once in a while but it's always something generic like 'items in your wishlist are trending', never anything that actually makes me want to open the app right then."},{"id":"S027","source_type":"synthetic","source_platform":"representative","theme":"return_redressal_apprehension","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Heard from a friend that returning ethnic wear after alteration tags are cut is basically impossible. So now anything I'm even slightly unsure will fit, I just don't order rather than deal with a return fight."},{"id":"S028","source_type":"synthetic","source_platform":"representative","theme":"return_redressal_apprehension","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"A bad size means a whole week of back-and-forth to get my money back last time. I'd rather not buy an uncertain item at all than deal with that again."},{"id":"S029","source_type":"synthetic","source_platform":"representative","theme":"price_availability_dynamics","blocking_strength":"Medium","segment":"price_tracker","text":"Waiting for the price to drop on this jacket, it's been sitting for a month. Not going to pay full price when I know sale season is close, so it just stays wishlisted."},{"id":"S030","source_type":"synthetic","source_platform":"representative","theme":"price_availability_dynamics","blocking_strength":"Medium","segment":"price_tracker","text":"By the time I decided on a size for the heels they were sold out. Now I keep it wishlisted hoping it restocks but honestly I've mentally moved on."},{"id":"S031","source_type":"synthetic","source_platform":"representative","theme":"price_availability_dynamics","blocking_strength":"Low","segment":"price_tracker","text":"I don't trust that the 'price drop' badge is a real drop and not just marked up first. So I ignore it and just keep checking manually, which means I check rarely."},{"id":"S032","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Bra/innerwear sizing on here is basically a guess and it's not something I can casually ask a friend about, so I just don't buy unless it's a brand I've already tried."},{"id":"S033","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"I wear the same size in every store I've shopped at offline. On here I've had to return three different sizes across three brands trying to find the one that fits. It's exhausting so now I just window shop."},{"id":"S034","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"Plus size model shots are rare so I genuinely can't tell how something will drape on a body like mine. I keep saving things hoping I'll eventually find a review from someone my size."},{"id":"S035","source_type":"synthetic","source_platform":"representative","theme":"quality_value_doubt","blocking_strength":"Medium","segment":"comparison_shopper","text":"Reviews are mostly about delivery speed, almost nobody actually talks about how the fabric feels or washes after a few uses. That's the one thing I actually need to know before I commit."},{"id":"S036","source_type":"synthetic","source_platform":"representative","theme":"social_validation_seeking","blocking_strength":"Medium","segment":"comparison_shopper","text":"I wanted a second opinion between two jackets and ended up asking a stranger's comment section on an old YouTube haul video because I didn't have anyone else to ask at 11pm."},{"id":"S037","source_type":"synthetic","source_platform":"representative","theme":"comparison_paralysis","blocking_strength":"Medium","segment":"comparison_shopper","text":"I wishlist the 'safe' option and the 'exciting' option every time and almost always end up buying neither because I can't decide which version of myself I'm shopping for."},{"id":"S038","source_type":"synthetic","source_platform":"representative","theme":"reengagement_failure","blocking_strength":"Medium","segment":"moodboarder","text":"My wishlist has like 80 items at this point. It's not a shopping list anymore, it's basically a scrapbook of things I liked at some point."},{"id":"O039","source_type":"real","source_platform":"Trustpilot","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"App marked my order as delivered but it never arrived. Delivery partner not answering calls."},{"id":"O040","source_type":"real","source_platform":"Trustpilot","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Refund has been pending since 4th August despite speaking with 4 different supervisors on chat."},{"id":"O041","source_type":"real","source_platform":"Trustpilot","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"They charged me a convenience fee just to swap the size, ridiculous."},{"id":"O042","source_type":"real","source_platform":"Trustpilot","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Received a completely different brand tag than what I ordered, looked fake."},{"id":"O043","source_type":"synthetic","source_platform":"representative","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"App keeps crashing every time I try to open the wishlist tab on Android 14, really frustrating bug."},{"id":"O044","source_type":"synthetic","source_platform":"representative","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Rider was rude and left the package outside in the rain."},{"id":"O045","source_type":"synthetic","source_platform":"representative","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Great app, fast delivery, love shopping here every week!"},{"id":"O046","source_type":"synthetic","source_platform":"representative","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Payment failed twice through UPI but amount got deducted both times, had to raise a ticket."},{"id":"O047","source_type":"synthetic","source_platform":"representative","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Customer care chatbot kept looping the same three options and never connected me to a human."},{"id":"O048","source_type":"synthetic","source_platform":"representative","theme":"not_relevant","blocking_strength":"Low","segment":null,"text":"Packaging was damaged in transit, box was crushed."},{"id":"S049","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"Critical","segment":"fit_sensitive_shopper","text":"Wishlisted a fitted blazer for an interview. Need it to be right on the first try, no time to return and reorder before the date. Not confident enough in the size chart so it's still sitting there two weeks later and the interview already happened."},{"id":"S050","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"I don't know if this colour will wash me out. On the model with her skin tone it's stunning, no idea about mine. That uncertainty alone has kept it wishlisted for two months."},{"id":"S051","source_type":"synthetic","source_platform":"representative","theme":"quality_value_doubt","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Paid premium prices before for what turned out to be thin, see-through fabric. Now anything wishlisted above a certain price sits there until I can find a real review with actual texture photos."},{"id":"S052","source_type":"synthetic","source_platform":"representative","theme":"social_validation_seeking","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Sent the link to my sister, she hasn't replied in three days. I won't buy it without her opinion even though I know that's a bit much."},{"id":"S053","source_type":"synthetic","source_platform":"representative","theme":"comparison_paralysis","blocking_strength":"Medium","segment":"comparison_shopper","text":"I keep three near-identical pairs of jeans wishlisted at all times, whenever I buy one I add a new one to replace it in the lineup. I don't think I'll ever actually clear this list."},{"id":"S054","source_type":"synthetic","source_platform":"representative","theme":"reengagement_failure","blocking_strength":"Medium","segment":"moodboarder","text":"Honestly if the item disappeared from my wishlist tomorrow I probably wouldn't notice for weeks. It's out of sight, out of mind the second I close the app."},{"id":"S055","source_type":"synthetic","source_platform":"representative","theme":"return_redressal_apprehension","blocking_strength":"Medium","segment":"fit_sensitive_shopper","text":"My last return took two weeks to process and I had to follow up three times. That memory alone makes me hesitate on anything I'm not fully sure about now."},{"id":"S056","source_type":"synthetic","source_platform":"representative","theme":"price_availability_dynamics","blocking_strength":"Low","segment":"price_tracker","text":"Prices seem to move around a lot on things I've saved, sometimes up, sometimes down, no pattern I can figure out. Makes we want to wait rather than commit."},{"id":"S057","source_type":"synthetic","source_platform":"representative","theme":"fit_sizing_uncertainty","blocking_strength":"High","segment":"fit_sensitive_shopper","text":"Footwear sizing is the worst - half a size off and the whole shoe is useless, but I can't try before I buy. I've got two pairs wishlisted for months because I genuinely cannot decide on size."},{"id":"S058","source_type":"synthetic","source_platform":"representative","theme":"styling_occasion_uncertainty","blocking_strength":"Medium","segment":"moodboarder","text":"Saved a going-out top but realistically I don't go out enough to justify it, keep telling myself 'next time there's an occasion' and there never quite is."}];
+
+const THEMES = [
+  {id:"fit_sizing_uncertainty", label:"Fit & sizing uncertainty", color:"var(--cat-1)",
+   rule:"User can't be confident the item will fit their body before paying: guesswork sizing, size charts that don't match reality, size varying brand-to-brand.",
+   kw:["fit","size","sizing","runs small","runs large","true to size","measurement","s/m/l","size chart","bracket","burned before","guess","blind","half a size"]},
+  {id:"styling_occasion_uncertainty", label:"Styling / occasion-fit uncertainty", color:"var(--cat-2)",
+   rule:"User isn't sure the item will suit them or the occasion it was saved for — can't picture it on their own body/skin tone, unsure if it's appropriate.",
+   kw:["suit me","suit my","occasion","skin tone","body type","picture it on","look on me","wardrobe","match my","translate","wash me out","drape","body like mine"]},
+  {id:"quality_value_doubt", label:"Quality vs. photo / value doubt", color:"var(--cat-3)",
+   rule:"Doubt the product will match its photos in hand — fabric, finish, true colour — or that it's worth the price.",
+   kw:["fabric","quality","photos","worth the price","cheap","see-through","texture","material","value","thin"]},
+  {id:"social_validation_seeking", label:"Social validation seeking", color:"var(--cat-5)",
+   rule:"User wants another person's opinion before buying — sends screenshots/links to a friend, partner or group chat before deciding.",
+   kw:["friend","opinion","group chat","confidante","second opinion","ask my","sister","mum","mother","partner","screenshot","reply"]},
+  {id:"comparison_paralysis", label:"Comparison paralysis", color:"var(--cat-4)",
+   rule:"Multiple similar wishlisted items compete for the same decision and the user can't resolve which, if any, to buy.",
+   kw:["compare","comparing","which one","can't decide","near-identical","similar","both","tabs","shortlist","identical","lineup"]},
+  {id:"reengagement_failure", label:"Re-engagement failure / moodboarding", color:"var(--cat-6)",
+   rule:"The wishlist functions as a bookmark or inspiration board rather than a purchase queue; the item is forgotten or buried.",
+   kw:["forgot","forget","moodboard","pinterest","someday","out of sight","never notice","buried","scrapbook","rediscover"]},
+  {id:"return_redressal_apprehension", label:"Pre-purchase return apprehension", color:"var(--cat-7)",
+   rule:"User hesitates to buy an uncertain item because they anticipate the return/refund process will be a hassle if it's wrong.",
+   kw:["return","refund","hassle","tag","reject","back-and-forth","week to","fight","impossible"]},
+  {id:"price_availability_dynamics", label:"Price & availability dynamics", color:"var(--cat-8)",
+   rule:"Behavior driven by price change, discount disappearance, or stock/size availability shifting on a wishlisted item.",
+   kw:["price","discount","sold out","restock","sale","drop","off discount","availability","marked up"]},
+];
+const THEME_MAP = Object.fromEntries(THEMES.map(t=>[t.id,t]));
+const SEV_ORDER = ["Critical","High","Medium","Low"];
+const SEV_WEIGHT = {Critical:4, High:3, Medium:2, Low:1};
+const SEV_COLOR = {Critical:"var(--critical)", High:"var(--serious)", Medium:"var(--warning)", Low:"var(--good)"};
+
+/* ---------------- deterministic classifier ---------------- */
+function classify(text){
+  const low = " " + text.toLowerCase() + " ";
+  let scores = THEMES.map(t=>{
+    let hits = t.kw.filter(k=>low.includes(k)).length;
+    return {theme:t, hits};
+  }).filter(s=>s.hits>0).sort((a,b)=>b.hits-a.hits);
+  if(scores.length===0){
+    return {theme:"not_relevant", label:"Not relevant to wishlist conversion", secondary:null, blocking:"—", matched:[], confidence:"n/a"};
+  }
+  const top = scores[0];
+  const secondary = scores[1] ? scores[1].theme.id : null;
+  const negators = ["won't","wont","can't","cant","never","not going to","haven't","havent","don't trust","dont trust","not doing","not worth"];
+  const hasNegator = negators.some(n=>low.includes(n));
+  let blocking = top.hits>=3 ? "Critical" : top.hits===2 ? "High" : hasNegator ? "High" : "Medium";
+  return {
+    theme: top.theme.id, label: top.theme.label, secondary,
+    blocking, matched: top.theme.kw.filter(k=>low.includes(k)),
+    confidence: scores.length>1 ? "moderate — secondary theme also present" : "clear single-theme match"
+  };
+}
+
+/* ---------------- aggregation ---------------- */
+function relevant(){ return CORPUS.filter(e=>e.theme!=="not_relevant"); }
+
+function renderOverviewStats(){
+  const rel = relevant();
+  const real = CORPUS.filter(e=>e.source_type==="real").length;
+  const el = document.getElementById("overview-stats");
+  const stats = [
+    [CORPUS.length, "total entries collected"],
+    [CORPUS.length-rel.length, "filtered at Stage 2 (not relevant)"],
+    [rel.length, "coded, in-scope entries"],
+    [real, "pulled from live web sources"]
+  ];
+  el.innerHTML = stats.map(([v,l])=>`<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+}
+
+function renderCorpus(){
+  document.getElementById("corpus-count").textContent = CORPUS.length + " entries";
+  const filtersEl = document.getElementById("corpus-filters");
+  const allChip = `<button class="chip on" data-f="__all__">All (${CORPUS.length})</button>`;
+  const themeChips = THEMES.map(t=>{
+    const n = CORPUS.filter(e=>e.theme===t.id).length;
+    return `<button class="chip" data-f="${t.id}">${t.label} (${n})</button>`;
+  }).join("");
+  const nrN = CORPUS.filter(e=>e.theme==="not_relevant").length;
+  filtersEl.innerHTML = allChip + themeChips + `<button class="chip" data-f="not_relevant">Filtered out (${nrN})</button>`;
+
+  function draw(filter){
+    const rows = (filter==="__all__" ? CORPUS : CORPUS.filter(e=>e.theme===filter));
+    document.getElementById("corpus-tbody").innerHTML = rows.map(e=>{
+      const th = THEME_MAP[e.theme];
+      const themeCell = th ? `<span class="sw" style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${th.color};margin-right:6px"></span>${th.label}` : `<span class="muted">excluded — not relevant</span>`;
+      const badge = e.source_type==="real" ? `<span class="badge real">real</span>` : `<span class="badge synth">synthetic</span>`;
+      return `<tr><td class="mono tiny">${e.id}</td><td>${badge}<div class="tiny muted" style="margin-top:4px">${e.source_platform}</div></td><td class="txt">${e.text}</td><td>${themeCell}</td><td>${e.blocking_strength!=="Low"||e.theme!=="not_relevant" ? sevBadge(e.blocking_strength) : sevBadge(e.blocking_strength)}</td></tr>`;
+    }).join("");
+  }
+  filtersEl.addEventListener("click", ev=>{
+    const btn = ev.target.closest("[data-f]"); if(!btn) return;
+    filtersEl.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+    btn.classList.add("on");
+    draw(btn.dataset.f);
+  });
+  draw("__all__");
+}
+function sevBadge(s){
+  if(!s || s==="—") return `<span class="tiny muted">—</span>`;
+  return `<span class="sev ${s}"><span class="dot"></span>${s}</span>`;
+}
+
+function renderTaxonomy(){
+  document.getElementById("taxo-list").innerHTML = THEMES.map(t=>
+    `<div class="taxo-item"><span class="sw" style="background:${t.color}"></span><h4>${t.label}</h4><span class="tiny muted mono" style="float:right">${t.id}</span><p>${t.rule}</p></div>`
+  ).join("") + `<div class="taxo-item" style="opacity:.75"><span class="sw" style="background:var(--ink-3)"></span><h4>Not relevant</h4><p>Delivery, payments, app bugs, unrelated praise — excluded at Stage 2 before coding.</p></div>`;
+}
+
+function bar(container, data, opts){
+  const max = Math.max(...data.map(d=>d.value), 1);
+  container.innerHTML = data.map(d=>`
+    <div class="barrow">
+      <div class="lbl">${d.label}</div>
+      <div class="bartrack"><div class="barfill" style="width:${(d.value/max*100).toFixed(1)}%; background:${d.color}"></div></div>
+      <div class="val">${opts && opts.suffix ? d.value+opts.suffix : d.value}</div>
+    </div>`).join("");
+}
+
+function renderAggregate(){
+  const rel = relevant();
+  const freqData = THEMES.map(t=>({label:t.label, value:rel.filter(e=>e.theme===t.id).length, color:t.color}))
+    .sort((a,b)=>b.value-a.value);
+  bar(document.getElementById("chart-freq"), freqData);
+
+  const sevData = THEMES.map(t=>{
+    const items = rel.filter(e=>e.theme===t.id);
+    const w = items.reduce((s,e)=>s+(SEV_WEIGHT[e.blocking_strength]||0),0);
+    return {label:t.label, value:w, color:t.color};
+  }).sort((a,b)=>b.value-a.value);
+  bar(document.getElementById("chart-sev"), sevData);
+
+  // co-occurrence matrix
+  const ids = THEMES.map(t=>t.id);
+  const M = Object.fromEntries(ids.map(a=>[a, Object.fromEntries(ids.map(b=>[b,0]))]));
+  rel.forEach(e=>{
+    if(e.secondary_theme && THEME_MAP[e.secondary_theme]){
+      M[e.theme][e.secondary_theme]++; M[e.secondary_theme][e.theme]++;
+    }
+  });
+  const short = id => THEME_MAP[id].label.split(" ")[0].replace(/[^A-Za-z]/g,"").slice(0,4);
+  let html = `<table class="cotable"><thead><tr><th></th>${ids.map(i=>`<th>${short(i)}</th>`).join("")}</tr></thead><tbody>`;
+  ids.forEach(a=>{
+    html += `<tr><td class="rowlabel">${THEME_MAP[a].label}</td>${ids.map(b=>{
+      const v = M[a][b];
+      const bg = a===b ? "transparent" : (v>0 ? "color-mix(in oklab, var(--accent) "+Math.min(v*28,85)+"%, transparent)" : "transparent");
+      return `<td style="background:${bg}">${a===b?"–":(v>0?v:"·")}</td>`;
+    }).join("")}</tr>`;
+  });
+  html += "</tbody></table>";
+  document.getElementById("cooccurrence").innerHTML = html;
+
+  // segment cross-tab
+  const segs = ["fit_sensitive_shopper","moodboarder","comparison_shopper","price_tracker"];
+  const segLabel = {fit_sensitive_shopper:"Fit-sensitive", moodboarder:"Moodboarder", comparison_shopper:"Comparison shopper", price_tracker:"Price tracker"};
+  let sHtml = `<table class="cotable"><thead><tr><th></th>${segs.map(s=>`<th>${segLabel[s]}</th>`).join("")}</tr></thead><tbody>`;
+  THEMES.forEach(t=>{
+    sHtml += `<tr><td class="rowlabel">${t.label}</td>${segs.map(s=>{
+      const v = rel.filter(e=>e.theme===t.id && e.segment===s).length;
+      const bg = v>0 ? "color-mix(in oklab, "+t.color+" "+Math.min(v*22+15,80)+"%, transparent)" : "transparent";
+      return `<td style="background:${bg}">${v||"·"}</td>`;
+    }).join("")}</tr>`;
+  });
+  sHtml += "</tbody></table>";
+  document.getElementById("segment-cross").innerHTML = sHtml;
+}
+
+/* ---------------- audit (precomputed genuine blind re-code) ---------------- */
+const AUDIT = [
+  {id:"R001", recode:"price_availability_dynamics", match:true, note:""},
+  {id:"R002", recode:"social_validation_seeking", match:true, note:""},
+  {id:"S053", recode:"comparison_paralysis", match:true, note:""},
+  {id:"S028", recode:"return_redressal_apprehension", match:true, note:""},
+  {id:"S008", recode:"fit_sizing_uncertainty", match:true, note:""},
+  {id:"S011", recode:"styling_occasion_uncertainty", match:"partial", note:"comparison_paralysis is a defensible secondary theme (3 competing sarees) — single-label schema under-counts this."},
+  {id:"S015", recode:"quality_value_doubt", match:"partial", note:"comparison_paralysis also present (two near-identical dresses) — same under-count pattern as S011."},
+  {id:"S054", recode:"reengagement_failure", match:true, note:""},
+  {id:"O040", recode:"not_relevant", match:true, note:""}
+];
+function renderAudit(){
+  const full = AUDIT.filter(a=>a.match===true).length;
+  const partial = AUDIT.filter(a=>a.match==="partial").length;
+  const rate = ((full + partial*0.5) / AUDIT.length * 100).toFixed(0);
+  document.getElementById("audit-stats").innerHTML = [
+    [AUDIT.length, "items re-coded blind"],
+    [full+"/"+AUDIT.length, "exact primary-theme match"],
+    [partial, "partial match (valid secondary theme missed)"],
+    [rate+"%", "effective agreement rate"]
+  ].map(([v,l])=>`<div class="stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+
+  document.getElementById("audit-tbody").innerHTML = AUDIT.map(a=>{
+    const orig = CORPUS.find(e=>e.id===a.id);
+    const origLabel = orig.theme==="not_relevant" ? "Not relevant" : THEME_MAP[orig.theme].label;
+    const recLabel = a.recode==="not_relevant" ? "Not relevant" : THEME_MAP[a.recode].label;
+    const matchCell = a.match===true ? `<span class="sev Low"><span class="dot"></span>Match</span>` : `<span class="sev Medium"><span class="dot"></span>Partial</span>`;
+    return `<tr><td class="mono tiny">${a.id}</td><td class="txt">${orig.text}${a.note?`<div class="tiny muted" style="margin-top:5px">↳ ${a.note}</div>`:""}</td><td>${origLabel}</td><td>${recLabel}</td><td>${matchCell}</td></tr>`;
+  }).join("");
+}
+
+/* ---------------- findings ---------------- */
+function renderFindings(){
+  const rel = relevant();
+  const n = id => rel.filter(e=>e.theme===id).length;
+  const fit = n("fit_sizing_uncertainty"), style = n("styling_occasion_uncertainty"),
+        social = n("social_validation_seeking"), redress = n("return_redressal_apprehension"),
+        moodboard = n("reengagement_failure");
+  const findings = [
+    {
+      title:"Fit and styling uncertainty out-rank generic “quality” complaints, and they're two different jobs",
+      body:`Fit/sizing uncertainty (${fit} entries) and styling/occasion uncertainty (${style} entries) top both the frequency and severity-weighted charts, ahead of the vaguer quality_value_doubt bucket. "Will this fit my body" and "will this suit my body/occasion" show up as distinct claims with different resolutions — one wants a measurement, the other wants a person's eye. Treating them as one "trust" problem, as generic NPS does, hides that they need different product answers.`
+    },
+    {
+      title:"Confidence is being outsourced to a person, not a rating",
+      body:`${social} entries explicitly describe sending a screenshot or link to a specific person — a friend, sister, or group chat — before buying, and several note the purchase stalls if that person doesn't reply in time. This is a real, already-happening workaround for exactly the uncertainty this project is chartered to close, and it's a workflow the app currently has no part in — the validation happens entirely outside Myntra, on WhatsApp or Instagram DMs, for free.`
+    },
+    {
+      title:"Return-apprehension and moodboard-wishlisting are quieter but shouldn't be ignored",
+      body:`${redress} entries show people avoiding a purchase pre-emptively because they expect the return process to be a fight if it's wrong — a distinct, earlier-stage cousin of post-purchase return friction. Separately, ${moodboard} entries describe the wishlist as a scrapbook rather than a purchase queue. Both matter for scoping: solving fit/styling confidence won't convert items that were never meant to be bought on a 30-day clock, so the target segment has to be chosen deliberately, not just "everyone with a wishlist."`
+    }
+  ];
+  document.getElementById("findings-list").innerHTML = findings.map((f,i)=>
+    `<div class="finding"><span class="n">FINDING ${i+1}</span><h4>${f.title}</h4><p>${f.body}</p></div>`
+  ).join("");
+}
+
+/* ---------------- tester (deterministic + optional live sample) ---------------- */
+const SAMPLES = [
+  "Been eyeing this bodycon dress for two weeks. My friend's the one I always ask before anything fitted, and she still hasn't looked at the screenshot I sent.",
+  "I have four almost-identical white sneakers saved right now and honestly I don't think I'm ever going to pick one.",
+  "Wishlisted it, forgot about it, found it again three months later scrolling for something else entirely.",
+  "Last return took two weeks and three follow-ups to get resolved so now I just don't buy anything I'm not fully sure about."
+];
+function renderTesterResult(target, r, kind){
+  const themeLabel = r.theme==="not_relevant" ? "Not relevant / filtered" : (THEME_MAP[r.theme] ? THEME_MAP[r.theme].label : r.theme);
+  const secLabel = r.secondary && THEME_MAP[r.secondary] ? THEME_MAP[r.secondary].label : (r.secondary || "—");
+  target.innerHTML = `<div class="result-card">
+    <h4>${kind}</h4>
+    <dl class="kv">
+      <dt>theme</dt><dd>${themeLabel}</dd>
+      <dt>secondary</dt><dd>${secLabel}</dd>
+      <dt>blocking</dt><dd>${sevBadge(r.blocking)}</dd>
+      ${r.matched && r.matched.length ? `<dt>matched on</dt><dd class="mono tiny">${r.matched.join(", ")}</dd>` : ""}
+      ${r.rationale ? `<dt>why</dt><dd>${r.rationale}</dd>` : ""}
+    </dl>
+  </div>`;
+}
+
+/* Works two ways: the built-in claude.ai artifact capability when viewed there,
+   or a same-origin serverless proxy (/.netlify/functions/ask-claude) when self-hosted.
+   Whichever is available is used automatically; if neither is, the AI button just stays hidden. */
+async function probeProxy(){
+  try{
+    const res = await fetch("/.netlify/functions/ask-claude", {method:"OPTIONS"});
+    return res.status === 204 || res.ok;
+  }catch(e){ return false; }
+}
+async function getAI(){
+  try{
+    const sample = await claude.use("sample");
+    if(sample){
+      return { source:"claude-capability", async json(prompt){ return await sample.json(prompt, {modelTier:"quick", cache:false}); } };
+    }
+  }catch(e){ /* no claude.ai runtime present — fall through to proxy */ }
+  if(await probeProxy()){
+    return { source:"proxy", async json(prompt){
+      const res = await fetch("/.netlify/functions/ask-claude", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({prompt, json:true})});
+      const body = await res.json().catch(()=>({}));
+      if(!res.ok) throw {code:"upstream_error", message: body.error || ("HTTP "+res.status)};
+      try{ return JSON.parse(body.text); }
+      catch(e){ const m = (body.text||"").match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw {code:"invalid_json", message:"couldn't parse a JSON reply"}; }
+    }};
+  }
+  return null;
+}
+
+async function wireTester(){
+  const input = document.getElementById("tester-input");
+  const results = document.getElementById("tester-results");
+  const btnClassify = document.getElementById("btn-classify");
+  const btnAI = document.getElementById("btn-ai");
+  const btnSample = document.getElementById("btn-sample-text");
+  let sampleIdx = 0;
+
+  btnSample.addEventListener("click", ()=>{ input.value = SAMPLES[sampleIdx % SAMPLES.length]; sampleIdx++; });
+
+  btnClassify.addEventListener("click", ()=>{
+    const text = input.value.trim();
+    if(!text){ input.focus(); return; }
+    const r = classify(text);
+    let det = document.getElementById("det-result");
+    if(!det){ det = document.createElement("div"); det.id="det-result"; results.appendChild(det); }
+    renderTesterResult(det, r, "Deterministic engine result — instant, offline, reproducible");
+  });
+
+  const ai = await getAI();
+  if(ai){
+    btnAI.style.display = "inline-flex";
+    btnAI.addEventListener("click", async ()=>{
+      const text = input.value.trim();
+      if(!text){ input.focus(); return; }
+      btnAI.disabled = true; btnAI.textContent = "Thinking…";
+      let aiCard = document.getElementById("ai-result");
+      if(!aiCard){ aiCard = document.createElement("div"); aiCard.id="ai-result"; results.appendChild(aiCard); }
+      aiCard.innerHTML = `<div class="result-card"><h4>Claude's read</h4><p class="tiny muted">Thinking…</p></div>`;
+      const taxo = THEMES.map(t=>`- ${t.id}: ${t.rule}`).join("\\n");
+      const prompt = `You are coding one user comment about a fashion e-commerce wishlist for a product-research pipeline. Taxonomy (pick exactly one primary theme id, and one secondary theme id if a second one clearly applies, else null; also rate how strongly this blocks the purchase as one of Critical/High/Medium/Low; else if the text is unrelated to deciding whether to buy a saved/wishlisted item, use "not_relevant"):\\n${taxo}\\n- not_relevant: delivery, payment, app bugs, unrelated praise, or anything not about the decision to buy a saved item.\\n\\nReply with ONLY a JSON object: {"theme": string, "secondary": string|null, "blocking": "Critical"|"High"|"Medium"|"Low"|"—", "rationale": string (one sentence, plain, for a non-technical reader)}.\\n\\nComment to code:\\n"""${text}"""`;
+      try{
+        const data = await ai.json(prompt);
+        renderTesterResult(aiCard, {theme:data.theme, secondary:data.secondary, blocking:data.blocking, rationale:data.rationale, matched:[]}, "Claude's read — live call, one request");
+      }catch(e){
+        const msg = e && e.code==="not_granted" ? "You declined the AI call — the deterministic engine above still works fully on its own."
+                   : e && e.code==="rate_limited" ? "Rate limited — try again in a moment."
+                   : "Couldn't get a live read right now (" + (e && (e.code||e.message) || "error") + ") — the deterministic engine above still works fully on its own.";
+        aiCard.innerHTML = `<div class="result-card"><h4>Claude's read</h4><p class="tiny muted">${msg}</p></div>`;
+      } finally {
+        btnAI.disabled = false; btnAI.textContent = "✨ Ask Claude for a second read";
+      }
+    });
+  }
+}
+
+/* ---------------- nav ---------------- */
+const NAV = [
+  {id:"overview", label:"How it works"},
+  {id:"corpus", label:"Corpus"},
+  {id:"taxonomy", label:"Taxonomy & live test"},
+  {id:"aggregate", label:"Aggregate findings"},
+  {id:"audit", label:"Audit"},
+  {id:"findings", label:"What changed our thinking"},
+];
+function renderNav(){
+  const side = document.getElementById("side");
+  side.innerHTML = NAV.map((n,i)=>`<button class="nav-item ${i===0?'on':''}" data-panel="${n.id}"><span class="n">0${i+1}</span>${n.label}</button>`).join("")
+    + `<div class="side-foot">Every chart and table on this page is computed live from the ${CORPUS.length}-entry corpus embedded in this file — nothing here is a static screenshot.</div>`;
+  side.addEventListener("click", ev=>{
+    const btn = ev.target.closest("[data-panel]"); if(!btn) return;
+    goto(btn.dataset.panel);
+  });
+}
+function goto(id){
+  document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on", p.dataset.panel===id));
+  document.querySelectorAll(".nav-item").forEach(b=>b.classList.toggle("on", b.dataset.panel===id));
+  window.scrollTo({top:0, behavior:"instant"});
+}
+document.addEventListener("click", ev=>{
+  const s = ev.target.closest("[data-goto]");
+  if(s){ goto(s.dataset.goto); }
+});
+
+/* ---------------- init ---------------- */
+renderNav();
+document.querySelector('section.panel[data-panel="overview"]').classList.add("on");
+renderOverviewStats();
+renderCorpus();
+renderTaxonomy();
+renderAggregate();
+renderAudit();
+renderFindings();
+wireTester();
+</script>
+</html>

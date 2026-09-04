@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<title>Second Look</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --surface-0:#FAF8F7; --surface-1:#FFFFFF; --surface-2:#F4EEF0; --border:#E9E1E4;
+  --ink-1:#231A1F; --ink-2:#5C4E54; --ink-3:#93838A;
+  --brand:#E12E62; --brand-ink:#FFFFFF; --brand-tint:#FDE9EF; --brand-dk:#B31E4C;
+  --good:#0ca30c; --good-bg:#E7F6E7; --warning:#c97e00; --warning-bg:#FBF0DC; --critical:#d03b3b; --critical-bg:#FBE8E7;
+  --shadow: 0 1px 2px rgba(35,26,31,.05), 0 10px 26px -14px rgba(35,26,31,.28);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme: dark;
+    --surface-0:#171215; --surface-1:#201A1E; --surface-2:#271F23; --border:#3A2E33;
+    --ink-1:#F3ECEE; --ink-2:#C7B7BE; --ink-3:#93838A;
+    --brand:#FF5C87; --brand-ink:#1C0009; --brand-tint:#3A1420; --brand-dk:#FF80A0;
+    --good:#2fbf4e; --good-bg:#12291A; --warning:#e0a52e; --warning-bg:#2E2410; --critical:#e66767; --critical-bg:#2E1414;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --surface-0:#171215; --surface-1:#201A1E; --surface-2:#271F23; --border:#3A2E33;
+  --ink-1:#F3ECEE; --ink-2:#C7B7BE; --ink-3:#93838A;
+  --brand:#FF5C87; --brand-ink:#1C0009; --brand-tint:#3A1420; --brand-dk:#FF80A0;
+  --good:#2fbf4e; --good-bg:#12291A; --warning:#e0a52e; --warning-bg:#2E2410; --critical:#e66767; --critical-bg:#2E1414;
+  --shadow: 0 1px 2px rgba(0,0,0,.4), 0 10px 30px -14px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--surface-0); color:var(--ink-1); font-family:'Inter',system-ui,sans-serif; font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:'Poppins',system-ui,sans-serif; letter-spacing:-.01em; text-wrap:balance; margin:0}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+button{font-family:inherit; cursor:pointer}
+.eyebrow{font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; letter-spacing:.09em; text-transform:uppercase; color:var(--ink-3)}
+
+.topbar{border-bottom:1px solid var(--border); background:var(--surface-1)}
+.topbar-in{max-width:1280px; margin:0 auto; padding:13px 20px; display:flex; align-items:center; gap:12px; flex-wrap:wrap}
+.brand{display:flex; align-items:center; gap:9px; font-family:'Poppins'; font-weight:800; font-size:17px}
+.brand .mark{width:26px;height:26px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:var(--brand-ink);font-size:13px}
+.brand .sub{font-weight:500; font-size:12.5px; color:var(--ink-3); font-family:'IBM Plex Mono',monospace}
+.stamp{margin-left:auto; font-family:'IBM Plex Mono',monospace; font-size:10.5px; font-weight:600; border:1px solid var(--border); border-radius:999px; padding:5px 11px; color:var(--ink-2)}
+
+.wrap{max-width:1280px; margin:0 auto; padding:26px 20px 60px; display:grid; grid-template-columns:380px 1fr; gap:28px; align-items:start}
+@media (max-width:980px){ .wrap{grid-template-columns:1fr; max-width:460px} }
+
+/* ---- phone ---- */
+.phone-col{position:sticky; top:22px}
+@media (max-width:980px){ .phone-col{position:static} }
+.phone{width:100%; max-width:380px; margin:0 auto; background:var(--surface-1); border:2px solid var(--ink-1); border-radius:30px; overflow:hidden; box-shadow:9px 9px 0 rgba(35,26,31,.10)}
+:root[data-theme="dark"] .phone, @media (prefers-color-scheme:dark){ .phone{box-shadow:9px 9px 0 rgba(0,0,0,.35)} }
+.notch{background:var(--brand); height:8px}
+.appbar{background:var(--brand); color:var(--brand-ink); padding:12px 16px 14px; display:flex; align-items:center; gap:10px}
+.appbar .back{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.2); border:none; color:inherit; display:flex; align-items:center; justify-content:center; font-size:15px}
+.appbar .title{font-family:'Poppins'; font-weight:700; font-size:15px}
+.screen{height:680px; overflow-y:auto; overflow-x:hidden; background:var(--surface-0); scrollbar-width:thin}
+.screen::-webkit-scrollbar{width:5px}
+.screen::-webkit-scrollbar-thumb{background:var(--border); border-radius:3px}
+.tabbar{display:flex; border-top:1px solid var(--border); background:var(--surface-1)}
+.tabbar button{flex:1; padding:9px 4px 11px; font-size:10px; font-weight:600; color:var(--ink-3); text-align:center; border:none; background:none; border-top:2.5px solid transparent}
+.tabbar button .ic{display:block; font-size:16px; margin-bottom:2px; line-height:1}
+.tabbar button.on{color:var(--brand); border-top-color:var(--brand)}
+
+.pad{padding:14px 16px}
+.wl-head{padding:16px 16px 6px}
+.wl-head h2{font-size:17px}
+.wl-head p{margin:3px 0 0; font-size:12px; color:var(--ink-3)}
+
+.item-card{display:flex; gap:12px; padding:12px; margin:0 16px 12px; background:var(--surface-1); border:1px solid var(--border); border-radius:14px; text-align:left; width:calc(100% - 32px)}
+.item-thumb{width:60px; height:74px; border-radius:10px; flex:none; display:flex; align-items:center; justify-content:center; font-size:24px}
+.item-info{flex:1; min-width:0}
+.item-info .nm{font-size:13px; font-weight:700; line-height:1.3}
+.item-info .br{font-size:11px; color:var(--ink-3); margin-top:1px}
+.item-info .pr{font-size:13px; font-weight:700; margin-top:5px}
+.sl-chip{display:inline-flex; align-items:center; gap:4px; font-family:'IBM Plex Mono',monospace; font-size:9.5px; font-weight:700; padding:3px 7px; border-radius:999px; margin-top:6px}
+.sl-chip.high{background:var(--good-bg); color:var(--good)}
+.sl-chip.med{background:var(--warning-bg); color:var(--warning)}
+.sl-chip.ask{background:var(--brand-tint); color:var(--brand)}
+
+/* product detail */
+.pdp-img{height:210px; display:flex; align-items:center; justify-content:center; font-size:64px; margin:0 16px; border-radius:16px}
+.pdp-title{padding:14px 16px 0}
+.pdp-title h2{font-size:17px}
+.pdp-title .br{font-size:12px; color:var(--ink-3); margin-top:2px}
+.pdp-title .pr{font-size:17px; font-weight:700; margin-top:6px}
+.sizepick{display:flex; gap:8px; padding:12px 16px 4px}
+.sizepick button{width:34px;height:34px;border-radius:8px;border:1px solid var(--border); background:var(--surface-1); font-size:12px; font-weight:600; color:var(--ink-2)}
+.sizepick button.on{border-color:var(--brand); color:var(--brand); background:var(--brand-tint)}
+
+.sl-panel{margin:14px 16px 16px; border:1.5px solid var(--brand); border-radius:16px; overflow:hidden; background:var(--surface-1)}
+.sl-head{background:var(--brand-tint); padding:11px 14px; display:flex; align-items:center; gap:8px}
+.sl-head .ic{width:20px;height:20px}
+.sl-head b{font-size:13px; color:var(--brand-dk)}
+.sl-tabs{display:flex; border-bottom:1px solid var(--border)}
+.sl-tabs button{flex:1; padding:9px 4px; font-size:11px; font-weight:700; color:var(--ink-3); border:none; background:none; border-bottom:2px solid transparent}
+.sl-tabs button.on{color:var(--brand); border-bottom-color:var(--brand)}
+.sl-body{padding:14px}
+
+.fit-score{display:flex; align-items:center; gap:14px}
+.fit-ring{width:64px;height:64px;border-radius:50%; display:flex; align-items:center; justify-content:center; flex:none; font-family:'Poppins'; font-weight:800; font-size:17px}
+.fit-msg h4{font-size:13px; margin:0 0 3px}
+.fit-msg p{font-size:11.5px; color:var(--ink-2); margin:0; line-height:1.45}
+.factor{display:flex; justify-content:space-between; gap:8px; font-size:11.5px; padding:7px 0; border-top:1px solid var(--border)}
+.factor .k{color:var(--ink-2)}
+.factor .v{font-weight:600}
+
+.contact-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--border)}
+.contact-row:first-of-type{border-top:none}
+.avatar{width:32px;height:32px;border-radius:50%; background:var(--surface-2); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:var(--ink-2); flex:none}
+.contact-row .nm{font-size:12.5px; font-weight:600; flex:1}
+.askbtn{font-size:11px; font-weight:700; color:var(--brand); background:var(--brand-tint); border:none; border-radius:8px; padding:6px 10px}
+.reply-bubble{background:var(--good-bg); border-radius:10px; padding:9px 11px; margin-top:8px; font-size:12px; color:var(--ink-1)}
+.reply-bubble b{color:var(--good)}
+.compose{background:var(--surface-2); border-radius:10px; padding:10px 11px; font-size:12px; margin-top:8px; color:var(--ink-2)}
+.demo-box{margin-top:10px; padding:8px 10px; border:1px dashed var(--ink-3); border-radius:8px; font-size:10.5px; color:var(--ink-3)}
+.demo-box button{font-size:10.5px; font-weight:700; color:var(--brand); background:none; border:none; text-decoration:underline; padding:0}
+
+.ai-form label{font-size:11px; font-weight:600; color:var(--ink-2); display:block; margin:8px 0 4px}
+.ai-form label:first-child{margin-top:0}
+.ai-form input, .ai-form select{width:100%; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--surface-0); color:var(--ink-1); font-size:12.5px; font-family:inherit}
+.ai-out{margin-top:10px; background:var(--surface-2); border-radius:10px; padding:11px 12px; font-size:12.5px; line-height:1.55; min-height:20px}
+.ai-out.thinking{color:var(--ink-3); font-style:italic}
+
+.btn{border-radius:10px; padding:10px 14px; font-size:12.5px; font-weight:700; border:none}
+.btn.brand{background:var(--brand); color:var(--brand-ink); width:100%}
+.btn.brand:disabled{opacity:.5}
+.btn.ghost{background:var(--surface-2); color:var(--ink-2); border:1px solid var(--border)}
+
+/* right column annotations */
+.notes{display:flex; flex-direction:column; gap:14px}
+.note-card{background:var(--surface-1); border:1px solid var(--border); border-radius:14px; padding:16px 18px; box-shadow:var(--shadow)}
+.note-card h3{font-size:15.5px; margin-bottom:6px}
+.note-card p{font-size:12.5px; color:var(--ink-2); line-height:1.55; margin:0}
+.note-card .tag{display:inline-block; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:700; color:var(--brand); background:var(--brand-tint); padding:2px 8px; border-radius:999px; margin-bottom:8px}
+footer{max-width:1280px; margin:0 auto; padding:10px 20px 50px; color:var(--ink-3); font-size:11.5px; line-height:1.6}
+</style>
+
+<div class="topbar"><div class="topbar-in">
+  <div class="brand"><span class="mark">S</span>Second Look <span class="sub">/ concept prototype for Myntra</span></div>
+  <span class="stamp">CONCEPT PROTOTYPE · NOT AFFILIATED WITH MYNTRA</span>
+</div></div>
+
+<div class="wrap">
+  <div class="phone-col">
+    <div class="phone">
+      <div class="notch"></div>
+      <div class="appbar">
+        <button class="back" id="backBtn" style="visibility:hidden">‹</button>
+        <div class="title" id="appTitle">Wishlist</div>
+      </div>
+      <div class="screen" id="screen"></div>
+      <div class="tabbar">
+        <button class="on"><span class="ic">♡</span>Wishlist</button>
+        <button><span class="ic">⌕</span>Search</button>
+        <button><span class="ic">⛃</span>Bag</button>
+        <button><span class="ic">◐</span>Profile</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="notes" id="notes"></div>
+</div>
+<footer>Second Look is a functional concept prototype built for this case study — the fit score, the ask-someone loop and the AI style read are computed live in your browser (the AI read makes one real call to Claude, with your permission). It is not a real Myntra product and doesn't send real messages or place real orders.</footer>
+
+<script>
+/* ---------------- mock data ---------------- */
+const HISTORY = [
+  {brand:"Libas", category:"ethnic", sizeOrdered:"M", outcome:"returned", reason:"ran small — sized up to L next time"},
+  {brand:"Anouk", category:"ethnic", sizeOrdered:"M", outcome:"kept", reason:null},
+  {brand:"H&M", category:"western", sizeOrdered:"S", outcome:"kept", reason:null},
+  {brand:"Roadster", category:"western", sizeOrdered:"M", outcome:"returned", reason:"too boxy on the shoulders"},
+  {brand:"Libas", category:"ethnic", sizeOrdered:"L", outcome:"kept", reason:null},
+];
+
+const ITEMS = {
+  kurta: {
+    id:"kurta", name:"Floral Anarkali Kurta Set", brand:"Libas", category:"ethnic", price:2399,
+    icon:"👗", tint:"var(--brand-tint)", sizes:["S","M","L","XL"], defaultSize:"M",
+    occasionHint:"a sangeet", savedFor:"Saved for a cousin's sangeet · 6 weeks away",
+  },
+  coord: {
+    id:"coord", name:"Textured Co-ord Set", brand:"Roadster", category:"western", price:1699,
+    icon:"👚", tint:"#EAF3EE", sizes:["XS","S","M","L"], defaultSize:"M",
+    occasionHint:"a work offsite", savedFor:"Saved for a work offsite · 10 days away",
+  },
+  blazer: {
+    id:"blazer", name:"Tailored Fit Blazer", brand:"H&M", category:"western", price:1899,
+    icon:"🧥", tint:"#EEF0FB", sizes:["XS","S","M","L"], defaultSize:"S",
+    occasionHint:"an interview", savedFor:"Saved for an interview round",
+  }
+};
+const WISHLIST_ORDER = ["kurta","coord","blazer"];
+
+/* ---------------- fit match engine (deterministic, transparent) ---------------- */
+function fitMatch(item, size){
+  const catHist = HISTORY.filter(h=>h.category===item.category);
+  const brandHist = HISTORY.filter(h=>h.brand===item.brand);
+  let score = 68, factors = [];
+
+  if(brandHist.length){
+    const kept = brandHist.filter(h=>h.outcome==="kept").length;
+    const bonus = Math.round((kept/brandHist.length)*22) - Math.round(((brandHist.length-kept)/brandHist.length)*14);
+    score += bonus;
+    factors.push({k:`Your history with ${item.brand}`, v:(kept===brandHist.length? "always kept" : kept===0? "returned before" : `${kept}/${brandHist.length} kept`)});
+  } else {
+    factors.push({k:`Your history with ${item.brand}`, v:"no past orders"});
+    score -= 6;
+  }
+
+  const catSmall = catHist.filter(h=>h.outcome==="returned" && (h.reason||"").includes("small")).length;
+  const catBoxy = catHist.filter(h=>h.outcome==="returned" && (h.reason||"").includes("boxy")).length;
+  let sizeNote = "true to your usual size";
+  if(catSmall >= 1 && item.category==="ethnic"){
+    score -= 8; sizeNote = `runs small in ${item.category} wear, based on your past returns`;
+  }
+  if(catBoxy >= 1 && item.category==="western" && size==="M"){
+    score -= 5; sizeNote = "boxier fit in this category has run large on your shoulders before";
+  }
+  factors.push({k:`${item.category === "ethnic" ? "Ethnic wear" : "Western wear"} sizing pattern`, v:sizeNote});
+
+  const dataPoints = catHist.length + brandHist.length;
+  const confidence = dataPoints >= 3 ? "high" : dataPoints >= 1 ? "moderate" : "low";
+  factors.push({k:"Confidence in this read", v:`${confidence} — based on ${dataPoints} relevant past order${dataPoints===1?"":"s"}`});
+  if(confidence==="low") score -= 5;
+
+  score = Math.max(35, Math.min(96, score));
+  let band = score>=78?"high":score>=58?"med":"low";
+  let headline = band==="high" ? "This size has a strong track record for you"
+               : band==="med" ? "Likely fine, with one thing to know"
+               : "Worth a second look before you buy";
+  return {score, band, headline, factors, sizeNote};
+}
+
+function ring(score, band){
+  const color = band==="high" ? "var(--good)" : band==="med" ? "var(--warning)" : "var(--critical)";
+  const bg = band==="high" ? "var(--good-bg)" : band==="med" ? "var(--warning-bg)" : "var(--critical-bg)";
+  return `<div class="fit-ring" style="background:${bg}; color:${color}">${score}</div>`;
+}
+
+/* ---------------- state ---------------- */
+let state = {view:"wishlist", itemId:null, size:null, slTab:"fit", replies:{}};
+
+function render(){
+  const screen = document.getElementById("screen");
+  const back = document.getElementById("backBtn");
+  const title = document.getElementById("appTitle");
+  if(state.view === "wishlist"){
+    back.style.visibility = "hidden"; title.textContent = "Wishlist";
+    screen.innerHTML = renderWishlist();
+  } else {
+    back.style.visibility = "visible"; title.textContent = "";
+    screen.innerHTML = renderDetail(ITEMS[state.itemId]);
+  }
+  renderNotes();
+  wire();
+}
+
+function renderWishlist(){
+  const cards = WISHLIST_ORDER.map(id=>{
+    const it = ITEMS[id];
+    const fm = fitMatch(it, it.defaultSize);
+    const chipClass = fm.band==="high" ? "high" : fm.band==="med" ? "med" : "ask";
+    const chipLabel = fm.band==="high" ? `${fm.score} fit match` : fm.band==="med" ? `${fm.score} fit match — 1 note` : "Second Look suggested";
+    return `<button class="item-card" data-open="${id}">
+      <div class="item-thumb" style="background:${it.tint}">${it.icon}</div>
+      <div class="item-info">
+        <div class="nm">${it.name}</div>
+        <div class="br">${it.brand} · Size ${it.defaultSize}</div>
+        <div class="pr">₹${it.price.toLocaleString("en-IN")}</div>
+        <div><span class="sl-chip ${chipClass}">◆ ${chipLabel}</span></div>
+      </div>
+    </button>`;
+  }).join("");
+  return `<div class="wl-head"><h2>Your Wishlist</h2><p>3 items · tap one to open Second Look</p></div>${cards}`;
+}
+
+function renderDetail(item){
+  const size = state.size || item.defaultSize;
+  const sizes = item.sizes.map(s=>`<button class="${s===size?'on':''}" data-size="${s}">${s}</button>`).join("");
+  return `
+    <div class="pdp-img" style="background:${item.tint}; font-size:96px">${item.icon}</div>
+    <div class="pdp-title">
+      <h2>${item.name}</h2>
+      <div class="br">${item.brand} · ${item.savedFor}</div>
+      <div class="pr">₹${item.price.toLocaleString("en-IN")}</div>
+    </div>
+    <div class="sizepick">${sizes}</div>
+    <div class="sl-panel">
+      <div class="sl-head"><span class="ic">🔎</span><b>Second Look</b></div>
+      <div class="sl-tabs">
+        <button data-slt="fit" class="${state.slTab==='fit'?'on':''}">Fit Match</button>
+        <button data-slt="ask" class="${state.slTab==='ask'?'on':''}">Ask Someone</button>
+        <button data-slt="ai" class="${state.slTab==='ai'?'on':''}">AI Style Read</button>
+      </div>
+      <div class="sl-body" id="slBody">${renderSlTab(item, size)}</div>
+    </div>
+  `;
+}
+
+function renderSlTab(item, size){
+  if(state.slTab === "fit"){
+    const fm = fitMatch(item, size);
+    return `
+      <div class="fit-score">${ring(fm.score, fm.band)}
+        <div class="fit-msg"><h4>${fm.headline}</h4><p>Size ${size} · computed from your own order history, not a generic size chart.</p></div>
+      </div>
+      ${fm.factors.map(f=>`<div class="factor"><span class="k">${f.k}</span><span class="v">${f.v}</span></div>`).join("")}
+    `;
+  }
+  if(state.slTab === "ask"){
+    const contacts = [
+      {id:"meera", name:"Meera (cousin)", init:"M"},
+      {id:"ritu", name:"Ritu (bestie)", init:"R"},
+      {id:"group", name:"Sangeet planning 💬", init:"G"},
+    ];
+    return `<p style="font-size:11.5px;color:var(--ink-2);margin:0 0 6px">Get a real second opinion without leaving the wishlist — the reply shows up right here.</p>
+      ${contacts.map(c=>`
+        <div class="contact-row">
+          <div class="avatar">${c.init}</div>
+          <div class="nm">${c.name}</div>
+          ${state.replies[c.id] ? "" : `<button class="askbtn" data-ask="${c.id}">Ask</button>`}
+        </div>
+        ${state.asked===c.id && !state.replies[c.id] ? `<div class="compose">Sending "${item.name}" with: "Would you wear this to ${item.occasionHint}?"
+          <div class="demo-box">Prototype note: real send would hand off to WhatsApp/SMS. <button data-simreply="${c.id}">Simulate her reply arriving →</button></div></div>` : ""}
+        ${state.replies[c.id] ? `<div class="reply-bubble"><b>${c.name.split(" ")[0]}:</b> ${state.replies[c.id]}</div>` : ""}
+      `).join("")}
+    `;
+  }
+  // AI tab
+  return `
+    <div class="ai-form">
+      <label>Occasion</label>
+      <select id="ai-occasion">
+        <option>${item.occasionHint.replace(/^a[n]? /,"")}</option>
+        <option>a casual day out</option>
+        <option>a festive family event</option>
+        <option>work / office</option>
+      </select>
+      <label>Anything else to factor in? (optional)</label>
+      <input id="ai-context" placeholder="e.g. I usually wear cooler tones, I'm 5'2&quot;">
+      <button class="btn brand" id="ai-ask" style="margin-top:12px">✨ Get an AI style read</button>
+      <div class="ai-out" id="ai-out" style="display:none"></div>
+    </div>
+  `;
+}
+
+/* ---------------- notes column ---------------- */
+const NOTES = {
+  wishlist: [
+    {tag:"WHY THIS SCREEN", h:"Confidence, surfaced before the revisit stalls", p:"Each wishlist item shows a Second Look status at a glance — a fit-match read, or a flag that it's worth a closer look — so the blocker is visible the moment the shopper re-opens the wishlist, not buried three taps deep."}
+  ],
+  fit: [
+    {tag:"FIT MATCH", h:"A personal fit signal, not a generic size chart", p:"Computed from this shopper's own order and return history — brand-level and category-level — the two things the discovery engine and Priya's and Ananya's interviews both named as what a size chart alone can't tell you."},
+    {tag:"WHY PUBLISH THE FACTORS", h:"An opaque score is a marketing claim", p:"Every factor behind the number is shown, not just the number — the same discipline that made your reference project's own score credible rather than decorative."}
+  ],
+  ask: [
+    {tag:"ASK SOMEONE", h:"The 'screenshot to a friend' workaround, made native", p:"Meera, Ritika and the discovery engine's real 'closet confidante' quote all describe the same behavior already happening on WhatsApp, untracked, with no guaranteed reply. This makes it a first-class, in-context loop instead."},
+    {tag:"WHAT'S SIMULATED HERE", h:"Honest about the prototype boundary", p:"This build simulates the reply for demo purposes — a production version would hand off to a real channel (WhatsApp Business API, SMS, or an in-app 'circle' of contacts) and a push notification when the reply lands."}
+  ],
+  ai: [
+    {tag:"INSTANT AI STYLE READ", h:"A fallback, never a replacement", p:"For the moment nobody's replied yet. Respondents were clear they wanted a person's opinion first — this is what fills the gap while they wait, clearly labeled as AI, not presented as equivalent to Meera's or Ritika's real second opinion."},
+    {tag:"LIVE, NOT CANNED", h:"This is a real call to Claude", p:"Click it — with your permission, this sends the item and occasion to Claude and streams back an actual generated read. If you decline or it's unavailable, the rest of the prototype still works fully."}
+  ]
+};
+function renderNotes(){
+  const key = state.view==="wishlist" ? "wishlist" : state.slTab;
+  document.getElementById("notes").innerHTML = NOTES[key].map(n=>
+    `<div class="note-card"><span class="tag">${n.tag}</span><h3>${n.h}</h3><p>${n.p}</p></div>`
+  ).join("");
+}
+
+/* ---------------- wiring ---------------- */
+function wire(){
+  document.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click", ()=>{
+    state.view="detail"; state.itemId=el.dataset.open; state.size=null; state.slTab="fit"; state.replies={}; state.asked=null;
+    render();
+  }));
+  document.getElementById("backBtn").onclick = ()=>{ state.view="wishlist"; render(); };
+  document.querySelectorAll("[data-size]").forEach(el=>el.addEventListener("click", ()=>{
+    state.size = el.dataset.size; render();
+  }));
+  document.querySelectorAll("[data-slt]").forEach(el=>el.addEventListener("click", ()=>{
+    state.slTab = el.dataset.slt; render();
+  }));
+  document.querySelectorAll("[data-ask]").forEach(el=>el.addEventListener("click", ()=>{
+    state.asked = el.dataset.ask; render();
+  }));
+  document.querySelectorAll("[data-simreply]").forEach(el=>el.addEventListener("click", ()=>{
+    const id = el.dataset.simreply;
+    const replies = {
+      meera:"Yes!! Love it for a sangeet. Maybe go one size up though, it looks fitted on the model.",
+      ritu:"Obsessed. Wear it, you'll thank me later 🙌",
+      group:"omg get it 😍 sizing up is smart given the last kurta set"
+    };
+    el.closest(".compose").innerHTML = `<span style="font-size:11px;color:var(--ink-3)">Waiting for reply…</span>`;
+    setTimeout(()=>{ state.replies[id] = replies[id] || "Yes, get it!"; render(); }, 900);
+  }));
+  wireAI();
+}
+
+/* Works two ways: the built-in claude.ai artifact capability when viewed there (streams live),
+   or a same-origin serverless proxy (/.netlify/functions/ask-claude) when self-hosted (returns
+   the full reply at once — no streaming, but otherwise identical). Whichever is available is
+   used automatically; if neither is, the button says so plainly. */
+async function probeProxy(){
+  try{
+    const res = await fetch("/.netlify/functions/ask-claude", {method:"OPTIONS"});
+    return res.status === 204 || res.ok;
+  }catch(e){ return false; }
+}
+async function getAI(){
+  try{
+    const sample = await claude.use("sample");
+    if(sample){
+      return { source:"claude-capability", async text(prompt, onText){
+        const r = await sample(prompt, {modelTier:"quick", cache:false, onText:({text})=>onText(text)});
+        return r.text;
+      }};
+    }
+  }catch(e){ /* no claude.ai runtime present — fall through to proxy */ }
+  if(await probeProxy()){
+    return { source:"proxy", async text(prompt, onText){
+      const res = await fetch("/.netlify/functions/ask-claude", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({prompt})});
+      const body = await res.json().catch(()=>({}));
+      if(!res.ok) throw {code:"upstream_error", message: body.error || ("HTTP "+res.status)};
+      onText(body.text);
+      return body.text;
+    }};
+  }
+  return null;
+}
+
+async function wireAI(){
+  const btn = document.getElementById("ai-ask");
+  if(!btn) return;
+  const ai = await getAI();
+  if(!ai){
+    btn.disabled = true; btn.textContent = "AI read unavailable in this view";
+    return;
+  }
+  btn.addEventListener("click", async ()=>{
+    const item = ITEMS[state.itemId];
+    const occasion = document.getElementById("ai-occasion").value;
+    const context = document.getElementById("ai-context").value;
+    const out = document.getElementById("ai-out");
+    out.style.display = "block"; out.classList.add("thinking"); out.textContent = "Thinking…";
+    btn.disabled = true;
+    const prompt = `You are a warm, concise personal stylist inside a fashion shopping app. A shopper is deciding whether to buy this wishlisted item:\\n\\nItem: ${item.name} by ${item.brand} (${item.category} wear), price ₹${item.price}\\nOccasion: ${occasion}\\n${context ? "Extra context from the shopper: " + context : ""}\\n\\nGive a short, specific, encouraging-but-honest styling read (3-4 sentences, plain text, no markdown): would this generally suit the stated occasion, any styling tip to make it work, and one honest caveat to consider. Do not invent specific facts about the shopper's body you weren't told.`;
+    try{
+      await ai.text(prompt, (text)=>{ out.classList.remove("thinking"); out.textContent = text; });
+    }catch(e){
+      out.classList.remove("thinking");
+      out.textContent = e && e.code==="not_granted" ? "You declined the AI call — no problem, the Fit Match and Ask Someone tabs work fully without it."
+        : "Couldn't get a live read right now. Try again in a moment.";
+    } finally { btn.disabled = false; }
+  });
+}
+
+render();
+</script>
+</html>
