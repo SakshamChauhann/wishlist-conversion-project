@@ -167,7 +167,7 @@ footer{max-width:1280px; margin:0 auto; padding:10px 20px 50px; color:var(--ink-
 
   <div class="notes" id="notes"></div>
 </div>
-<footer>Second Look is a functional concept prototype built for this case study — the fit score, the ask-someone loop and the AI style read are computed live in your browser (the AI read makes one real call to Claude, with your permission). It is not a real Myntra product and doesn't send real messages or place real orders.</footer>
+<footer>Second Look is a functional concept prototype built for this case study — the fit score, the ask-someone loop and the AI style read are computed live in your browser (the AI read makes one real call to <span id="ai-model-name">an AI model</span>, with your permission). It is not a real Myntra product and doesn't send real messages or place real orders.</footer>
 
 <script>
 /* ---------------- mock data ---------------- */
@@ -366,7 +366,7 @@ const NOTES = {
   ],
   ai: [
     {tag:"INSTANT AI STYLE READ", h:"A fallback, never a replacement", p:"For the moment nobody's replied yet. Respondents were clear they wanted a person's opinion first — this is what fills the gap while they wait, clearly labeled as AI, not presented as equivalent to Meera's or Ritika's real second opinion."},
-    {tag:"LIVE, NOT CANNED", h:"This is a real call to Claude", p:"Click it — with your permission, this sends the item and occasion to Claude and streams back an actual generated read. If you decline or it's unavailable, the rest of the prototype still works fully."}
+    {tag:"LIVE, NOT CANNED", h:"This is a real call to an AI model", p:"Click it — with your permission, this sends the item and occasion to that model and streams back an actual generated read. If you decline or it's unavailable, the rest of the prototype still works fully."}
   ]
 };
 function renderNotes(){
@@ -405,13 +405,15 @@ function wire(){
   wireAI();
 }
 
-/* Works two ways: the built-in claude.ai artifact capability when viewed there (streams live),
-   or a same-origin serverless proxy (/.netlify/functions/ask-claude) when self-hosted (returns
-   the full reply at once — no streaming, but otherwise identical). Whichever is available is
-   used automatically; if neither is, the button says so plainly. */
+/* Works two ways: the built-in claude.ai artifact capability when viewed there (streams live) —
+   a real call to Claude — or a same-origin serverless proxy (/.netlify/functions/ask-ai) when
+   self-hosted (returns the full reply at once, no streaming), which calls a free-tier model
+   (currently Llama 3.3 70B via Groq), not Claude. Whichever is available is used automatically;
+   if neither is, the button says so plainly. The footer and notes copy are updated from
+   ai.source below so they never claim "Claude" for a reply that didn't come from Claude. */
 async function probeProxy(){
   try{
-    const res = await fetch("/.netlify/functions/ask-claude", {method:"OPTIONS"});
+    const res = await fetch("/.netlify/functions/ask-ai", {method:"OPTIONS"});
     return res.status === 204 || res.ok;
   }catch(e){ return false; }
 }
@@ -427,7 +429,7 @@ async function getAI(){
   }catch(e){ /* no claude.ai runtime present — fall through to proxy */ }
   if(await probeProxy()){
     return { source:"proxy", async text(prompt, onText){
-      const res = await fetch("/.netlify/functions/ask-claude", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({prompt})});
+      const res = await fetch("/.netlify/functions/ask-ai", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({prompt})});
       const body = await res.json().catch(()=>({}));
       if(!res.ok) throw {code:"upstream_error", message: body.error || ("HTTP "+res.status)};
       onText(body.text);
@@ -441,6 +443,13 @@ async function wireAI(){
   const btn = document.getElementById("ai-ask");
   if(!btn) return;
   const ai = await getAI();
+  if(ai && ai.source === "claude-capability"){
+    // Genuinely Claude here — update the generic default copy to say so accurately.
+    const nameEl = document.getElementById("ai-model-name");
+    if(nameEl) nameEl.textContent = "Claude";
+    NOTES.ai[1] = {tag:"LIVE, NOT CANNED", h:"This is a real call to Claude", p:"Click it — with your permission, this sends the item and occasion to Claude and streams back an actual generated read. If you decline or it's unavailable, the rest of the prototype still works fully."};
+    if(state.view==="detail" && state.slTab==="ai") renderNotes();
+  }
   if(!ai){
     btn.disabled = true; btn.textContent = "AI read unavailable in this view";
     return;
