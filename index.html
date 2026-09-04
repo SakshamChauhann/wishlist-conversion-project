@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wishlist → Purchase Conversion — Second Look</title>
+<style>
+  :root{
+    color-scheme: light;
+    --surface-0:#FAF8F5; --surface-1:#FFFFFF; --surface-border:#E5E0D8;
+    --ink-1:#18140F; --ink-2:#57503F; --ink-3:#8C8371;
+    --accent:#C31856; --accent-tint:#FDEAF0;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      color-scheme: dark;
+      --surface-0:#141210; --surface-1:#1C1916; --surface-border:#373126;
+      --ink-1:#F3EFE8; --ink-2:#C6BEAE; --ink-3:#8F8672;
+      --accent:#FF5C8A; --accent-tint:#3A1420;
+    }
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; min-height:100vh; background:var(--surface-0); color:var(--ink-1);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;
+    display:flex; align-items:center; justify-content:center; padding:32px;
+  }
+  main{max-width:760px; width:100%}
+  .kicker{font-family:ui-monospace,"IBM Plex Mono",monospace; font-size:14px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--accent)}
+  h1{font-size:34px; line-height:1.25; margin:12px 0 8px; letter-spacing:-.01em}
+  p.lede{font-size:17px; color:var(--ink-2); line-height:1.55; margin:0 0 32px; max-width:640px}
+  .cards{display:grid; grid-template-columns:1fr 1fr; gap:20px}
+  @media (max-width:640px){.cards{grid-template-columns:1fr}}
+  a.card{
+    display:block; text-decoration:none; color:inherit; background:var(--surface-1);
+    border:1px solid var(--surface-border); border-radius:16px; padding:24px 26px;
+    transition:border-color .15s ease, transform .15s ease;
+  }
+  a.card:hover{border-color:var(--accent); transform:translateY(-2px)}
+  a.card .tag{display:inline-block; font-family:ui-monospace,monospace; font-size:12px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); background:var(--accent-tint); padding:4px 10px; border-radius:999px}
+  a.card h2{font-size:20px; margin:12px 0 6px}
+  a.card p{font-size:14.5px; color:var(--ink-2); line-height:1.45; margin:0}
+  a.card .go{display:inline-flex; align-items:center; gap:6px; font-size:14px; font-weight:600; color:var(--accent); margin-top:14px}
+  footer{margin-top:28px; font-size:13px; color:var(--ink-3)}
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Myntra · Growth · Wishlist → Purchase Conversion</div>
+  <h1>Wishlist conversion isn't a discount problem — it's a confidence problem.</h1>
+  <p class="lede">An AI discovery engine, six research interviews, and a working prototype, built under one constraint: no monetary incentives anywhere in the solution.</p>
+  <div class="cards">
+    <a class="card" href="./discovery-engine.html">
+      <span class="tag">Part 1 · Testable workflow</span>
+      <h2>WishlistLens</h2>
+      <p>The AI discovery engine — a coded, audited taxonomy over real and disclosed-synthetic corpus data. Run your own text through it live.</p>
+      <span class="go">Open the discovery engine →</span>
+    </a>
+    <a class="card" href="./second-look.html">
+      <span class="tag">Part 5 · Deployed MVP</span>
+      <h2>Second Look</h2>
+      <p>Fit Match, Ask Someone, and an AI Style Read — a functional concept prototype for resolving fit and styling uncertainty.</p>
+      <span class="go">Open the MVP →</span>
+    </a>
+  </div>
+  <footer>Both tools work fully on their own — the AI features make a live call through a serverless proxy when configured.</footer>
+</main>
+</body>
+</html>
