@@ -5,9 +5,12 @@
 // Calls Groq's free-tier API (an OpenAI-compatible chat-completions endpoint), not Anthropic.
 // This means the self-hosted copy of these tools gets a real, live AI call without requiring
 // a paid API key — but the model answering here is whatever Groq is currently serving under
-// the model id below (Meta's Llama 3.3 70B at the time this was written), not Claude. The
-// front-end copy is written to say "AI" rather than "Claude" for anything routed through this
-// function, so nothing on the page overclaims which model actually answered.
+// the model id below (OpenAI's open-weight gpt-oss-120b, served by Groq, as of Sept 2026 —
+// Groq had previously served Llama 3.3 70B under this same function, but deprecated it on
+// 2026-08-16; if this model id ever 404s the same way, check console.groq.com/docs/models
+// for whatever replaced it), not Claude. The front-end copy is written to say "AI" rather
+// than "Claude" for anything routed through this function, so nothing on the page overclaims
+// which model actually answered.
 
 exports.handler = async (event) => {
   const cors = {
@@ -50,7 +53,7 @@ exports.handler = async (event) => {
     : "You are a concise, warm assistant embedded in a fashion-shopping prototype. Keep replies short and plain (no markdown).";
 
   const body = {
-    model: "llama-3.3-70b-versatile",
+    model: "openai/gpt-oss-120b",
     max_tokens: 500,
     messages: [
       { role: "system", content: system },
