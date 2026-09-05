@@ -431,7 +431,7 @@ async function getAI(){
     return { source:"proxy", async text(prompt, onText){
       const res = await fetch("/.netlify/functions/ask-ai", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({prompt})});
       const body = await res.json().catch(()=>({}));
-      if(!res.ok) throw {code:"upstream_error", message: body.error || ("HTTP "+res.status)};
+      if(!res.ok) throw {code:"upstream_error", message: (body.error || ("HTTP "+res.status)) + (body.detail ? " — " + body.detail : "")};
       onText(body.text);
       return body.text;
     }};
@@ -466,8 +466,12 @@ async function wireAI(){
       await ai.text(prompt, (text)=>{ out.classList.remove("thinking"); out.textContent = text; });
     }catch(e){
       out.classList.remove("thinking");
-      out.textContent = e && e.code==="not_granted" ? "You declined the AI call — no problem, the Fit Match and Ask Someone tabs work fully without it."
-        : "Couldn't get a live read right now. Try again in a moment.";
+      if(e && e.code==="not_granted"){
+        out.textContent = "You declined the AI call — no problem, the Fit Match and Ask Someone tabs work fully without it.";
+      } else {
+        const detail = (e && e.message) ? e.message : (e && e.code) || "unknown error";
+        out.textContent = "Couldn't get a live read right now (" + detail + "). Try again in a moment.";
+      }
     } finally { btn.disabled = false; }
   });
 }

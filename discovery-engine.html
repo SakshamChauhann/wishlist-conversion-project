@@ -639,7 +639,7 @@ async function getAI(){
     return { source:"proxy", async json(prompt){
       const res = await fetch("/.netlify/functions/ask-ai", {method:"POST", headers:{"content-type":"application/json"}, body: JSON.stringify({prompt, json:true})});
       const body = await res.json().catch(()=>({}));
-      if(!res.ok) throw {code:"upstream_error", message: body.error || ("HTTP "+res.status)};
+      if(!res.ok) throw {code:"upstream_error", message: (body.error || ("HTTP "+res.status)) + (body.detail ? " — " + body.detail : "")};
       try{ return JSON.parse(body.text); }
       catch(e){ const m = (body.text||"").match(/\{[\s\S]*\}/); if(m) return JSON.parse(m[0]); throw {code:"invalid_json", message:"couldn't parse a JSON reply"}; }
     }};
@@ -689,9 +689,10 @@ async function wireTester(){
           const data = await ai.json(prompt);
           renderTesterResult(aiCard, {theme:data.theme, secondary:data.secondary, blocking:data.blocking, rationale:data.rationale, matched:[]}, `${aiPoss} read — live call, one request`);
         }catch(e){
+          const detail = (e && e.message) ? e.message : (e && e.code) || "error";
           const msg = e && e.code==="not_granted" ? "You declined the AI call — the deterministic engine above still works fully on its own."
                      : e && e.code==="rate_limited" ? "Rate limited — try again in a moment."
-                     : "Couldn't get a live read right now (" + (e && e.code || "error") + ") — the deterministic engine above still works fully on its own.";
+                     : "Couldn't get a live read right now (" + detail + ") — the deterministic engine above still works fully on its own.";
           aiCard.innerHTML = `<div class="result-card"><h4>${aiPoss} read</h4><p class="tiny muted">${msg}</p></div>`;
         } finally {
           btnAI.disabled = false; btnAI.textContent = `✨ Ask ${aiName} for a second read`;
