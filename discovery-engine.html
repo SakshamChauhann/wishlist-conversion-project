@@ -187,6 +187,32 @@ textarea:focus-visible, button:focus-visible, .chip:focus-visible, .stage:focus-
 .taxo-item h4{display:inline; font-size:13.5px}
 .taxo-item p{margin:5px 0 0; font-size:12.5px; color:var(--ink-2)}
 
+/* business case / hypotheses / RICE / risk / GTM additions */
+.src{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--ink-3); white-space:nowrap}
+.src.hard{color:var(--good)}
+.src.est{color:var(--warning)}
+.src.gap{color:var(--critical)}
+.hyp{border:1.5px solid var(--ink-1); border-radius:12px; padding:13px 16px; margin-bottom:12px; background:var(--surface-1)}
+.hyp:last-child{margin-bottom:0}
+.hyp .eyebrow{margin-bottom:5px}
+.hyp .kill{margin-top:8px; padding-top:8px; border-top:1px dashed var(--surface-border); font-size:12.5px; color:var(--ink-2)}
+.hyp .kill b{color:var(--critical)}
+.call{font-size:10.5px; font-weight:700; font-family:'IBM Plex Mono',monospace; padding:3px 9px; border-radius:999px; white-space:nowrap; display:inline-block}
+.call.mvp{background:color-mix(in oklab, var(--good) 15%, transparent); color:var(--good)}
+.call.follow{background:color-mix(in oklab, var(--warning) 15%, transparent); color:var(--warning)}
+.call.rejected{background:color-mix(in oklab, var(--critical) 12%, transparent); color:var(--critical)}
+.risk-sev{font-size:10.5px; font-weight:700; font-family:'IBM Plex Mono',monospace; padding:3px 9px; border-radius:999px; white-space:nowrap}
+.risk-sev.Critical{background:color-mix(in oklab, var(--critical) 15%, transparent); color:var(--critical)}
+.risk-sev.High{background:color-mix(in oklab, var(--serious) 15%, transparent); color:var(--serious)}
+.risk-sev.Medium{background:color-mix(in oklab, var(--warning) 15%, transparent); color:var(--warning)}
+.gtm-phase{border:1px solid var(--surface-border); border-radius:12px; padding:13px 16px; margin-bottom:10px}
+.gtm-phase:last-child{margin-bottom:0}
+.gtm-phase .ph{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--accent); font-weight:700}
+.northstar{border:2px solid var(--ink-1); border-radius:14px; padding:18px 20px; text-align:center; background:var(--surface-2)}
+.northstar .eyebrow{justify-content:center}
+.northstar h2{font-size:22px; margin:6px 0 4px}
+.northstar p{margin:0; color:var(--ink-2); font-size:13px}
+
 footer{max-width:1320px; margin:0 auto; padding:20px 20px 50px; color:var(--ink-3); font-size:12px}
 </style>
 
@@ -234,6 +260,53 @@ footer{max-width:1320px; margin:0 auto; padding:20px 20px 50px; color:var(--ink-
         <div class="card">
           <div class="hgroup"><h2>Corpus at a glance</h2></div>
           <div class="statgrid" id="overview-stats"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BUSINESS CASE ============ -->
+    <section class="panel" data-panel="business">
+      <div class="stack">
+        <div class="card">
+          <div class="eyebrow">why this, why now</div>
+          <h2 style="font-size:22px; margin:6px 0 10px">Myntra is thin-margin and already betting on fit confidence — this extends that bet, not a new one</h2>
+          <div class="statgrid" style="margin-bottom:14px">
+            <div class="stat"><div class="v">₹6,043 Cr</div><div class="l">FY25 revenue, +18% YoY <span class="src hard">🟢 RoC filing</span></div></div>
+            <div class="stat"><div class="v">₹548 Cr</div><div class="l">FY25 net profit, 18× YoY — 2nd profitable year <span class="src hard">🟢 RoC filing</span></div></div>
+            <div class="stat"><div class="v">8.8%</div><div class="l">EBITDA margin, FY25 <span class="src hard">🟢 RoC filing</span></div></div>
+            <div class="stat"><div class="v">₹2,919 Cr</div><div class="l">Logistics cost, +20% YoY — the line reverse-logistics sits inside <span class="src hard">🟢 RoC filing</span></div></div>
+          </div>
+          <p class="muted">Myntra doesn't file public results the way a listed company does, but its FY25 numbers surface through Registrar-of-Companies filings reported by Indian business media. <a href="https://entrackr.com/fintrackr/myntra-profit-zooms-18x-to-rs-548-cr-in-fy25-10452797" target="_blank">Entrackr's coverage of the filing</a> is the anchor source for the four figures above. An 8.8% EBITDA margin is not Blinkit's 0.26%, but it's still thin enough that a cost line growing 20% a year (logistics) and a returns problem concentrated in one category (fashion) are not rounding errors.</p>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>The business problem, stated plainly</h2></div>
+          <p>Myntra already invests in fit confidence — a Size &amp; Fit Intelligence engine covering an estimated 85% of eligible apparel, a "Maya" AI assistant reaching an estimated 90% of monthly active users, and a 30-minute quick-commerce line (M-Now) already at an estimated 10% of orders in live cities <span class="src est">🟡 company/PR-sourced, Aug 2026</span>. None of that infrastructure is aimed at the specific moment this project targets: an item a shopper already wanted enough to save, that still doesn't convert. That's not a discovery problem (the shopper found it) or a delivery problem (Myntra ships fast) — it's the same confidence gap the fit-AI investment is meant to close, just left unclosed at exactly the step where the shopper is closest to buying.</p>
+          <p class="muted small" style="margin-top:8px">The other half of the same gap shows up after purchase: independent industry research puts India fashion e-commerce return rates at roughly 25–40% against a ~10% all-category average, with 53–93% of those returns attributed to size/fit issues depending on methodology <span class="src est">🟡 GoKwik / Pragma / Coresight / PRIME AI, compiled 2026</span>. A shopper who can't judge fit before adding to cart and a shopper who can't judge fit before checking out are the same shopper failing the same judgment call twice — which is why this project treats wishlist non-conversion and post-purchase returns as two readings of one underlying signal, not two separate problems.</p>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Hypotheses this project is built to test</h2></div>
+          <p class="muted small" style="margin-top:-4px">Findings are worth more when they can fail. Each hypothesis below names the test that would prove it wrong, not just the result that would prove it right.</p>
+          <div class="hyp">
+            <div class="eyebrow">primary hypothesis · H1</div>
+            <p><b>If</b> a wishlisted shopper gets a personal fit/style confidence signal and an easy way to get a second opinion before buying, <b>then</b> ≥1-item-in-30-days wishlist conversion rises materially, <b>because</b> the corpus shows the barrier is judgment (fit, styling, social validation — 27 of 91 relevant entries, largely already covered by Myntra's own fit-AI infrastructure) rather than price or discovery for the addressable slice of the corpus.</p>
+            <div class="kill"><b>Kill criterion:</b> a pilot A/B (Ask Someone + Fit Match visible vs. hidden, same catalogue and pricing) shows conversion uplift under 3 percentage points in the treatment cohort after one full cycle.</div>
+          </div>
+          <div class="hyp">
+            <div class="eyebrow">supporting hypothesis · H2</div>
+            <p><b>If</b> a second opinion can be gotten inside the app in under a minute, <b>then</b> the number of shoppers who silently abandon a wishlisted item after a single moment of doubt falls, <b>because</b> the corpus shows the current workaround — screenshotting to a friend on WhatsApp — is already happening unprompted, just untracked and with no guaranteed reply.</p>
+            <div class="kill"><b>Kill criterion:</b> post-launch reply rate on Ask Someone requests falls below 40% at 24 hours, meaning the in-app loop is slower than the WhatsApp workaround it's meant to replace.</div>
+          </div>
+          <div class="hyp">
+            <div class="eyebrow">supporting hypothesis · H3</div>
+            <p><b>If</b> the severity-weighted theme ranking from the discovery engine (fit, styling, social validation as the addressable cluster) is real rather than an artifact of which reviews happen to be public, <b>then</b> the same ranking should reappear when the pipeline is re-run against Myntra's own first-party wishlist and return data, <b>because</b> a convenience sample of public complaints is skewed toward whoever bothers to complain publicly, not necessarily toward the true distribution of silent non-converters.</p>
+            <div class="kill"><b>Kill criterion:</b> re-running the same taxonomy against first-party data (Section 20's Phase 0) produces a materially different top-2 theme ranking — in which case the MVP's targeting, not just its numbers, needs to be revisited.</div>
+          </div>
+        </div>
+
+        <div class="callout honest">
+          <strong>Where the real numbers stop and the estimates start.</strong> The four figures in the top card are hard, RoC-disclosed numbers — independently reported by Entrackr and corroborated by Inc42/AngelOne from the same filing. Everything tagged <span class="src est">🟡</span> above (MAU, Maya/fit-engine coverage, M-Now order share) is company or PR-sourced, not audited, and is used only to argue direction, not precision. Two things a Blinkit-style case study would normally have and this one explicitly doesn't: Myntra discloses <strong>no GMV, no order volume, and no average order value</strong> anywhere public, and <strong>no wishlist-specific abandonment-rate study exists</strong> for Indian or fashion e-commerce — only global cart-abandonment benchmarks (Baymard: 70.2% average, 78.5% for fashion specifically). The business-impact model in the "Metrics, GTM &amp; impact" tab is built around this gap rather than papering over it.
         </div>
       </div>
     </section>
@@ -333,6 +406,136 @@ footer{max-width:1320px; margin:0 auto; padding:20px 20px 50px; color:var(--ink-
         <div class="card">
           <div class="eyebrow">from here</div>
           <p style="margin-top:8px">These findings are what Part 2's metric decomposition and Part 3's primary research were built to test — see the deck for the full chain from business metric → product outcomes → this engine → primary research → problem definition.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ SOLUTION SCORING & RISKS ============ -->
+    <section class="panel" data-panel="solutions">
+      <div class="stack">
+        <div class="card">
+          <div class="hgroup"><h2>Options considered, scored on RICE</h2></div>
+          <p class="muted small" style="margin-top:-4px">Reach is a relative 1–10 score, not a user count — Myntra doesn't disclose wishlist-specific engagement, so this ranks options against each other rather than claiming a precise reach figure. Impact and Confidence follow the standard RICE convention; Effort is relative engineering-weeks.</p>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Option</th><th style="width:60px">Reach</th><th style="width:60px">Impact</th><th style="width:70px">Confid.</th><th style="width:60px">Effort</th><th style="width:60px">RICE</th><th style="width:100px">Call</th></tr></thead>
+              <tbody>
+                <tr><td><b>Ask Someone</b> — native in-app second-opinion loop</td><td>10</td><td>3.0</td><td>70%</td><td>6</td><td><b>3.50</b></td><td><span class="call mvp">MVP</span></td></tr>
+                <tr><td><b>Fit Match</b> — personal fit score from order/return history</td><td>8</td><td>3.0</td><td>65%</td><td>8</td><td><b>1.95</b></td><td><span class="call mvp">MVP</span></td></tr>
+                <tr><td><b>AI Style Read</b> — fallback second opinion while a reply is pending</td><td>10</td><td>1.5</td><td>60%</td><td>3</td><td><b>3.00</b></td><td><span class="call mvp">MVP</span></td></tr>
+                <tr><td>Stock &amp; Price Alert — non-monetary "still here" nudge</td><td>10</td><td>2.0</td><td>65%</td><td>5</td><td><b>2.60</b></td><td><span class="call follow">Fast-follow</span></td></tr>
+                <tr><td>Comparison Resolver — surface why this item vs. the alternative</td><td>6</td><td>1.5</td><td>55%</td><td>7</td><td><b>0.71</b></td><td><span class="call follow">Fast-follow</span></td></tr>
+                <tr><td>Intent Triage — tag confidence level at save time</td><td>10</td><td>1.0</td><td>50%</td><td>4</td><td><b>1.25</b></td><td><span class="call follow">Fast-follow</span></td></tr>
+                <tr><td>Dedicated human stylist chat</td><td>3</td><td>3.0</td><td>60%</td><td>20</td><td><b>0.27</b></td><td><span class="call rejected">Rejected</span></td></tr>
+                <tr><td>Price-drop nudge on wishlisted items</td><td>10</td><td>2.5</td><td>75%</td><td>3</td><td><b>6.25</b></td><td><span class="call rejected">Rejected</span></td></tr>
+                <tr><td>Generic "you still have this" reminder push</td><td>10</td><td>0.5</td><td>40%</td><td>2</td><td><b>1.00</b></td><td><span class="call rejected">Rejected</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout note" style="margin-top:14px"><strong>The highest RICE score on this table is the one we rejected.</strong> A price-drop nudge scores 6.25 — comfortably the best of the nine — because discounting reliably moves behavior and is cheap to build. It's cut anyway, for two reasons: the project's constraint is no monetary incentives, and independently, the corpus shows roughly 11 of the 16 price/availability entries are about an item disappearing mid-decision, not its price — a markdown doesn't bring back stock that's already sold out. RICE ranks options against each other; it doesn't know what the project is actually allowed to build. The dedicated-stylist option is rejected for the same reason the Blinkit case study's human-QC option was: it recreates the exact bottleneck it's meant to fix (one person's judgment, now gated by headcount cost) instead of removing it. The generic reminder push is rejected because it doesn't touch the judgment barrier the corpus surfaces at all — it just repeats information the shopper already has.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Risk register</h2></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:34px">#</th><th>Risk</th><th style="width:80px">Severity</th><th>Mitigation</th></tr></thead>
+              <tbody>
+                <tr><td>R1</td><td><b>A visible low Fit Match score suppresses purchases that would have happened anyway.</b> The single biggest risk to the whole concept — showing evidence can cut both ways.</td><td><span class="risk-sev Critical">Critical</span></td><td>Ship as a controlled pilot A/B, not a blanket flag. Below a data-sufficiency threshold, show "not enough order history yet" rather than a discouraging low number. Guardrail metric (Metrics tab) tracked from day one.</td></tr>
+                <tr><td>R2</td><td><b>Ask Someone gets no reply.</b> Cold-start problem — the loop only works if someone answers.</td><td><span class="risk-sev High">High</span></td><td>AI Style Read surfaces automatically after a wait window so the shopper is never left with silence. Reply rate is H2's own kill-criterion metric, watched weekly.</td></tr>
+                <tr><td>R3</td><td><b>The AI Style Read is generic or invents specifics about the shopper it wasn't told.</b> A bad AI answer damages trust faster than no AI at all.</td><td><span class="risk-sev High">High</span></td><td>Prompt explicitly forbids inventing unstated facts about the shopper's body. Always labeled AI, never presented as equivalent to a real second opinion — matching what respondents said they actually want.</td></tr>
+                <tr><td>R4</td><td><b>The social loop backfires</b> — a lukewarm or negative reply discourages a purchase more than silence would have.</td><td><span class="risk-sev Medium">Medium</span></td><td>A reply is never a blocking gate; the item stays addable regardless of what the friend says. The loop is opt-in and one tap to skip.</td></tr>
+                <tr><td>R5</td><td><b>Price &amp; availability — the single largest theme by severity — is structurally out of reach of a no-monetary-incentive solution.</b></td><td><span class="risk-sev Critical">Critical</span></td><td>Not "solved" — disclosed honestly in Findings. Only the availability sub-slice (~11 of 16 entries: stock disappearing, not discount timing) is addressed, via the Stock &amp; Price Alert fast-follow.</td></tr>
+                <tr><td>R6</td><td><b>The corpus is a convenience sample of public complainers</b>, not a random sample of all wishlisters — the same caveat every review-mining pipeline carries.</td><td><span class="risk-sev High">High</span></td><td>Already disclosed in the Audit and Business Case tabs. GTM Phase 0 (Metrics tab) re-runs this exact taxonomy against Myntra's own first-party wishlist and return data before any pilot ships — this is H3's falsification test.</td></tr>
+                <tr><td>R7</td><td><b>Baseline wishlist engagement is unknown</b> — no disclosed usage data exists to size the opportunity against.</td><td><span class="risk-sev Medium">Medium</span></td><td>Phase 0 instruments and measures the current 30-day wishlist conversion baseline before anything ships, so any later uplift has a real denominator.</td></tr>
+                <tr><td>R8</td><td><b>Competitive replication</b> — Ajio, Flipkart Fashion or Amazon Fashion could ship an "ask a friend" button in weeks.</td><td><span class="risk-sev Medium">Medium</span></td><td>The interface is copyable; the targeting logic tied to Myntra's own existing Size &amp; Fit Intelligence engine (~85% SKU coverage already live) is not — a data/integration moat, not a UI one.</td></tr>
+                <tr><td>R9</td><td><b>Organizational ownership</b> spans wishlist/catalog, growth/social, and support/returns teams — split ownership is how good ideas quietly die.</td><td><span class="risk-sev High">High</span></td><td>Needs one owner with a mandate across all three. The shared metrics tree (Metrics tab) is designed as the forcing function that puts catalog, growth and support on one set of numbers.</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ METRICS, GTM & IMPACT ============ -->
+    <section class="panel" data-panel="impact">
+      <div class="stack">
+        <div class="northstar">
+          <div class="eyebrow" style="display:flex">north star metric</div>
+          <h2>30-Day Wishlist Conversion Rate</h2>
+          <p>Share of wishlisted items where the shopper buys ≥1 item from that save within 30 days of adding it — the metric this entire project exists to move.</p>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Metric tree</h2></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:90px">Layer</th><th>Metric</th><th>Why it's here</th></tr></thead>
+              <tbody>
+                <tr><td><b>North star</b></td><td>30-day wishlist conversion rate</td><td>The single number every other row is meant to move.</td></tr>
+                <tr><td rowspan="3">Input</td><td>Ask Someone reply rate within 24h</td><td>Tests H2 directly — the loop only helps if it's faster than the WhatsApp workaround it replaces.</td></tr>
+                <tr><td>Fit Match display rate</td><td>Share of eligible items with enough order/return history to show a confident score, not a guess.</td></tr>
+                <tr><td>AI Style Read open rate</td><td>Take-up of the fallback when no reply has landed yet.</td></tr>
+                <tr><td rowspan="2">Quality</td><td>Post-purchase return rate on converted items</td><td>Checks whether confidence-driven conversion also reduces fit-driven returns — or just moves the same failure to after checkout.</td></tr>
+                <tr><td>Reply / AI-read helpfulness (thumbs up/down)</td><td>Cheap, direct signal on whether the second opinion is actually useful.</td></tr>
+                <tr><td rowspan="2"><b>Guardrail</b></td><td><b>Low-Fit-Match-score conversion rate</b></td><td>The metric that decides whether this ships at all — see callout below.</td></tr>
+                <tr><td>Ask Someone opt-out rate</td><td>If this is high, the loop is friction, not value, and needs to be optional-by-default rather than opt-out.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout honest" style="margin-top:14px"><strong>The guardrail that decides whether this ships nationally.</strong> If showing a low Fit Match score causes a shopper to abandon an item they would otherwise have bought — unknowingly, without ever seeing the alternative where the score stayed hidden — the honest conclusion is that transparency cost more than it earned, exactly the risk the Blinkit FreshProof case study names as its own biggest threat. That's why Phase 1 below is a controlled pilot A/B, not a feature flag, and why low-score conversion staying at ≥85% of the control group is a hard gate before Phase 2, not a nice-to-have.</div>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Phased rollout</h2></div>
+          <div class="gtm-phase">
+            <span class="ph">PHASE 0 · INSTRUMENT — 4 weeks</span>
+            <p style="margin:6px 0 0">Re-run this page's exact taxonomy against Myntra's own first-party wishlist and return data (H3's falsification test, R6's mitigation). Measure the current 30-day wishlist conversion baseline. Shadow-score Fit Match against actual historical return outcomes without showing it to anyone. Nothing customer-facing.</p>
+            <p class="muted small" style="margin-top:6px"><b>Gate to proceed:</b> baseline is measurable; shadow Fit Match scores correlate with real return outcomes at a meaningful level; first-party theme ranking doesn't materially contradict this corpus's ranking.</p>
+          </div>
+          <div class="gtm-phase">
+            <span class="ph">PHASE 1 · PILOT — 8 weeks, 2 categories (western wear + footwear)</span>
+            <p style="margin:6px 0 0">Ask Someone, Fit Match and AI Style Read go live for a randomized cohort of eligible wishlist users in the two categories most concentrated in the fit/styling/social-validation cluster.</p>
+            <p class="muted small" style="margin-top:6px"><b>Gate to proceed:</b> 30-day conversion uplift ≥3pp vs. control (H1); Ask Someone reply rate ≥40% at 24h (H2); low-score conversion ≥85% of control (guardrail).</p>
+          </div>
+          <div class="gtm-phase">
+            <span class="ph">PHASE 2 · SCALE A/B — 10 weeks, full category set</span>
+            <p style="margin:6px 0 0">Expand to all categories, run as a true randomized control at scale rather than a single cohort.</p>
+            <p class="muted small" style="margin-top:6px"><b>Gate to proceed:</b> north-star uplift holds at scale; guardrail still passes; post-purchase return rate on converted items doesn't materially worsen (confirms conversion isn't just moving the same failure downstream).</p>
+          </div>
+          <div class="gtm-phase">
+            <span class="ph">PHASE 3 · NATIONAL — 16 weeks, staged</span>
+            <p style="margin:6px 0 0">Full rollout of the MVP, with Stock &amp; Price Alert, Comparison Resolver and Intent Triage added incrementally, each gated by its own smaller pilot rather than shipped alongside the main rollout.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="hgroup"><h2>Business impact — what can and can't be quantified</h2></div>
+          <p class="muted small" style="margin-top:-4px">Unlike a listed company's disclosed GMV and order volume, Myntra publishes none of that — so a Blinkit-style "₹ Cr of GMV at stake" table isn't honestly buildable here. What follows separates a cost-side estimate anchored to a real disclosed number from a revenue-side argument that's directionally real but can't be precisely sized.</p>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Scenario</th><th style="width:150px">% of logistics cost assumed addressable</th><th style="width:130px">Illustrative annual value</th></tr></thead>
+              <tbody>
+                <tr><td>Conservative</td><td>2%</td><td>≈ ₹58 Cr</td></tr>
+                <tr><td>Base</td><td>4%</td><td>≈ ₹117 Cr</td></tr>
+                <tr><td>Upside</td><td>7%</td><td>≈ ₹204 Cr</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="muted small" style="margin-top:8px">This anchors to the one real, disclosed cost line where returns handling plausibly sits — ₹2,918.9 Cr FY25 logistics cost, growing 20% YoY, faster than revenue's 18% <span class="src hard">🟢 RoC filing</span>. The 2–7% range is an illustrative assumption, not a disclosed split — Myntra doesn't publish what share of that line is reverse logistics, let alone the fit-driven portion of it. <strong>That number is exactly what Phase 0's shadow-mode measurement exists to replace with a real one</strong> — this table is a placeholder for a real model, not a forecast.</p>
+          <div class="hgroup" style="margin-top:16px"><h2 style="font-size:16px">Monetisation opportunities</h2></div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th style="width:34px">#</th><th>Opportunity</th><th>Mechanism</th><th style="width:100px">Horizon</th></tr></thead>
+              <tbody>
+                <tr><td>M1</td><td><b>Frequency &amp; retention</b></td><td>The primary return — no new revenue line, protects and grows existing order frequency in a category Myntra already treats as strategic (M-Now, Maya, the fit-AI investment).</td><td>Immediate</td></tr>
+                <tr><td>M2</td><td><b>Reduced fit-driven return handling cost</b></td><td>Direct cost line, pending Phase 0's real measurement of the addressable share.</td><td>Immediate–pending</td></tr>
+                <tr><td>M3</td><td><b>First-party fit signal</b></td><td>Every Ask Someone and Fit Match interaction is a labeled data point that improves Myntra's own Size &amp; Fit Intelligence engine beyond just the wishlist context.</td><td>6–12 mo</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout honest" style="margin-top:14px"><strong>One path that must stay closed.</strong> The project's core design choice is no monetary incentives. The moment "Ask Someone" or "Fit Match" quietly becomes a vehicle for a disguised discount — for example, showing a lower price only to shoppers who saw a low Fit Match score — the project stops testing whether confidence converts and starts testing whether cash does, contaminating every metric in the tree above. That decision belongs in this document's design principles, not left to whichever team owns the feature under next quarter's growth pressure.</div>
         </div>
       </div>
     </section>
@@ -618,7 +821,7 @@ function renderTesterResult(target, r, kind){
 
 /* Works two ways: the built-in claude.ai artifact capability when viewed there — a real call
    to Claude — or a same-origin serverless proxy (/.netlify/functions/ask-ai) when self-hosted,
-   which calls a free-tier model (currently Llama 3.3 70B via Groq), not Claude. Whichever is
+   which calls a free-tier model (currently gpt-oss-120b via Groq), not Claude. Whichever is
    available is used automatically; if neither is, the AI button just stays hidden. The UI text
    is set from ai.source below so it never claims "Claude" for a reply that didn't come from
    Claude. */
@@ -704,11 +907,14 @@ async function wireTester(){
 /* ---------------- nav ---------------- */
 const NAV = [
   {id:"overview", label:"How it works"},
+  {id:"business", label:"Business case"},
   {id:"corpus", label:"Corpus"},
   {id:"taxonomy", label:"Taxonomy & live test"},
   {id:"aggregate", label:"Aggregate findings"},
   {id:"audit", label:"Audit"},
   {id:"findings", label:"What changed our thinking"},
+  {id:"solutions", label:"Solution scoring & risks"},
+  {id:"impact", label:"Metrics, GTM & impact"},
 ];
 function renderNav(){
   const side = document.getElementById("side");
