@@ -110,6 +110,14 @@ button{font-family:inherit; cursor:pointer}
 .factor{display:flex; justify-content:space-between; gap:8px; font-size:11.5px; padding:7px 0; border-top:1px solid var(--border)}
 .factor .k{color:var(--ink-2)}
 .factor .v{font-weight:600}
+.sl-chip.coldstart{background:var(--surface-2); color:var(--ink-2)}
+.fit-audit{font-size:11px; line-height:1.5; color:var(--ink-2); background:var(--surface-2); border:1px solid var(--border); border-radius:8px; padding:8px 10px; margin:10px 0 4px}
+.fit-audit b{color:var(--ink-1)}
+.dr-block{margin-top:14px; padding-top:12px; border-top:1px dashed var(--border)}
+.dr-trigger{background:none; border:none; padding:0; font-size:11.5px; font-weight:600; color:var(--ink-2); text-decoration:underline; text-underline-offset:2px; cursor:pointer}
+.dr-chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:9px}
+.dr-chips .chip{font-size:10.5px; font-weight:600; padding:6px 10px; border-radius:999px; border:1px solid var(--border); background:var(--surface-1); color:var(--ink-2); cursor:pointer}
+.dr-done{font-size:11.5px; color:var(--good); line-height:1.5; background:var(--good-bg); border-radius:8px; padding:9px 11px}
 
 .contact-row{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--border)}
 .contact-row:first-of-type{border-top:none}
@@ -198,54 +206,112 @@ const ITEMS = {
 };
 const WISHLIST_ORDER = ["kurta","coord","blazer"];
 
-/* ---------------- fit match engine (deterministic, transparent) ---------------- */
+/* ---------------- fit engine: Fit Twins (cross-user cohort) + personal signal ---------------- */
+// FIT_TWINS stands in for a live aggregate query against Myntra's own order+return database:
+// "shoppers whose own keep/return pattern across brands looks like this shopper's, filtered to
+// this exact SKU + size." That's data Myntra already collects on every order — nothing new to
+// gather, no new consent to ask for. A style with too few twins yet (below FIT_TWINS_THRESHOLD)
+// falls back to a Fit Jury state: the shopper's own order history fills the gap for now.
+// Two DIFFERENT receipts feed two DIFFERENT things, and conflating them would be a real error:
+//   · Fit Receipt      — one tap AFTER DELIVERY (kept / returned + why). A real outcome on a real
+//                        SKU+size, so this is the ONLY thing that can grow a Fit Twins cohort.
+//   · Decision Receipt — one tap on a wishlist EXIT (see renderDR). A non-purchase, so it can
+//                        never produce a keep/return outcome. It is demand + diagnostic data:
+//                        it tells us WHY a style stalls, and flags when a Fit Jury read wasn't
+//                        enough — it does not and cannot promote a style out of cold start.
+// The engine compounds — it does not need a bigger model, just more completed orders — which is
+// the actual moat, not the UI.
+const FIT_TWINS = {
+  kurta: { S:{cohort:201,keptPct:77}, M:{cohort:312,keptPct:84}, L:{cohort:118,keptPct:80}, XL:{cohort:54,keptPct:74} },
+  coord: { XS:{cohort:41,keptPct:65}, S:{cohort:83,keptPct:71}, M:{cohort:96,keptPct:69}, L:{cohort:29,keptPct:66} },
+  blazer:{ XS:{cohort:9,keptPct:null}, S:{cohort:14,keptPct:null}, M:{cohort:17,keptPct:null}, L:{cohort:6,keptPct:null} }
+};
+const FIT_TWINS_THRESHOLD = 20;
+
 function fitMatch(item, size){
   const catHist = HISTORY.filter(h=>h.category===item.category);
   const brandHist = HISTORY.filter(h=>h.brand===item.brand);
-  let score = 68, factors = [];
+  const twins = (FIT_TWINS[item.id] && FIT_TWINS[item.id][size]) || {cohort:0, keptPct:null};
+  const coldStart = twins.cohort < FIT_TWINS_THRESHOLD;
+  let factors = [], score;
+
+  if(!coldStart){
+    score = twins.keptPct;
+    factors.push({k:"Fit Twins signal", v:`${twins.cohort} shoppers with a fit history like yours bought this in size ${size} — ${twins.keptPct}% kept it`});
+  } else {
+    score = 55;
+    factors.push({k:"Fit Twins signal", v:`Only ${twins.cohort} fit-twins so far in size ${size} — too new a style for a crowd read yet`});
+  }
 
   if(brandHist.length){
     const kept = brandHist.filter(h=>h.outcome==="kept").length;
     const bonus = Math.round((kept/brandHist.length)*22) - Math.round(((brandHist.length-kept)/brandHist.length)*14);
-    score += bonus;
-    factors.push({k:`Your history with ${item.brand}`, v:(kept===brandHist.length? "always kept" : kept===0? "returned before" : `${kept}/${brandHist.length} kept`)});
+    factors.push({k:`Your own history with ${item.brand}`, v:(kept===brandHist.length? "always kept" : kept===0? "returned before" : `${kept}/${brandHist.length} kept`)});
+    score += coldStart ? bonus : Math.round(bonus/3); // once a cohort signal exists, it dominates; personal history is corroborating, not primary
   } else {
-    factors.push({k:`Your history with ${item.brand}`, v:"no past orders"});
-    score -= 6;
+    factors.push({k:`Your own history with ${item.brand}`, v:"no past orders"});
+    if(coldStart) score -= 6;
   }
 
   const catSmall = catHist.filter(h=>h.outcome==="returned" && (h.reason||"").includes("small")).length;
   const catBoxy = catHist.filter(h=>h.outcome==="returned" && (h.reason||"").includes("boxy")).length;
   let sizeNote = "true to your usual size";
   if(catSmall >= 1 && item.category==="ethnic"){
-    score -= 8; sizeNote = `runs small in ${item.category} wear, based on your past returns`;
+    score -= 6; sizeNote = `runs small in ${item.category} wear, based on your past returns`;
   }
   if(catBoxy >= 1 && item.category==="western" && size==="M"){
-    score -= 5; sizeNote = "boxier fit in this category has run large on your shoulders before";
+    score -= 4; sizeNote = "boxier fit in this category has run large on your shoulders before";
   }
   factors.push({k:`${item.category === "ethnic" ? "Ethnic wear" : "Western wear"} sizing pattern`, v:sizeNote});
 
   const dataPoints = catHist.length + brandHist.length;
-  const confidence = dataPoints >= 3 ? "high" : dataPoints >= 1 ? "moderate" : "low";
-  factors.push({k:"Confidence in this read", v:`${confidence} — based on ${dataPoints} relevant past order${dataPoints===1?"":"s"}`});
-  if(confidence==="low") score -= 5;
+  const personalConfidence = dataPoints >= 3 ? "high" : dataPoints >= 1 ? "moderate" : "low";
+  factors.push({k:"Your own order-history confidence", v:`${personalConfidence} — based on ${dataPoints} relevant past order${dataPoints===1?"":"s"}`});
+  if(personalConfidence==="low" && coldStart) score -= 5;
 
-  score = Math.max(35, Math.min(96, score));
-  let band = score>=78?"high":score>=58?"med":"low";
-  let headline = band==="high" ? "This size has a strong track record for you"
-               : band==="med" ? "Likely fine, with one thing to know"
-               : "Worth a second look before you buy";
-  return {score, band, headline, factors, sizeNote};
+  if(coldStart){
+    factors.push({k:"Help the next shopper", v:"If you buy it, your Fit Receipt after delivery (kept or returned, and why) is what starts a real Fit Twins cohort for this style"});
+  }
+
+  score = coldStart ? Math.max(35, Math.min(90, score)) : Math.max(35, Math.min(96, score));
+  // The ring is a PERSONALISED CONFIDENCE score, not the raw cohort statistic.
+  // cohortPct is the fact (what the twins actually did); adjustment is what your own history moved it by.
+  const cohortPct = coldStart ? null : twins.keptPct;
+  const adjustment = coldStart ? null : score - cohortPct;
+  const band = coldStart ? "coldstart" : (score>=78?"high":score>=58?"med":"low");
+  const headline = coldStart ? "Too new for a Fit Twins read — here's what we know instead"
+                 : band==="high" ? "Fit Twins have a strong track record with this size"
+                 : band==="med" ? "Fit Twins are mostly positive, with one thing to know"
+                 : "Fit Twins suggest a second look before you buy";
+  return {score, band, headline, factors, sizeNote, coldStart, twins, cohortPct, adjustment};
 }
 
 function ring(score, band){
+  if(band==="coldstart"){
+    return `<div class="fit-ring" style="background:var(--surface-2); color:var(--ink-2); font-size:10.5px; line-height:1.2">NEW<br>STYLE</div>`;
+  }
   const color = band==="high" ? "var(--good)" : band==="med" ? "var(--warning)" : "var(--critical)";
   const bg = band==="high" ? "var(--good-bg)" : band==="med" ? "var(--warning-bg)" : "var(--critical-bg)";
-  return `<div class="fit-ring" style="background:${bg}; color:${color}">${score}</div>`;
+  return `<div class="fit-ring" style="background:${bg}; color:${color}">${score}%</div>`;
+}
+
+function renderDR(item){
+  const picked = state.dr[item.id];
+  if(picked){
+    const fitReason = picked === "Still unsure about fit";
+    const detail = fitReason
+      ? `The fit evidence we showed you wasn't enough — this style gets prioritised for a real Fit Twins read.`
+      : `That's demand data, not fit data — it tells us why this stalled, and it won't be dressed up as a fit signal.`;
+    return `<div class="dr-done">✓ Noted — "${picked}." ${detail}</div>`;
+  }
+  const openChips = state.drOpen === item.id
+    ? `<div class="dr-chips">${["Still unsure about fit","Found something better","No longer needed","Just browsing"].map(r=>`<button class="chip" data-drpick="${r}" data-dritem="${item.id}">${r}</button>`).join("")}</div>`
+    : "";
+  return `<button class="dr-trigger" data-dropen="${item.id}">Not buying this? Tell us why — 10 seconds →</button>${openChips}`;
 }
 
 /* ---------------- state ---------------- */
-let state = {view:"wishlist", itemId:null, size:null, slTab:"fit", replies:{}};
+let state = {view:"wishlist", itemId:null, size:null, slTab:"fit", replies:{}, dr:{}, drOpen:null};
 
 function render(){
   const screen = document.getElementById("screen");
@@ -266,8 +332,11 @@ function renderWishlist(){
   const cards = WISHLIST_ORDER.map(id=>{
     const it = ITEMS[id];
     const fm = fitMatch(it, it.defaultSize);
-    const chipClass = fm.band==="high" ? "high" : fm.band==="med" ? "med" : "ask";
-    const chipLabel = fm.band==="high" ? `${fm.score} fit match` : fm.band==="med" ? `${fm.score} fit match — 1 note` : "Second Look suggested";
+    const chipClass = fm.band==="high" ? "high" : fm.band==="med" ? "med" : fm.band==="coldstart" ? "coldstart" : "ask";
+    const chipLabel = fm.band==="coldstart" ? "New style — be an early fit twin"
+                     : fm.band==="high" ? `${fm.cohortPct}% of fit twins kept it`
+                     : fm.band==="med" ? `${fm.cohortPct}% of fit twins kept it — 1 note`
+                     : "Second Look suggested";
     return `<button class="item-card" data-open="${id}">
       <div class="item-thumb" style="background:${it.tint}">${it.icon}</div>
       <div class="item-info">
@@ -295,22 +364,32 @@ function renderDetail(item){
     <div class="sl-panel">
       <div class="sl-head"><span class="ic">🔎</span><b>Second Look</b></div>
       <div class="sl-tabs">
-        <button data-slt="fit" class="${state.slTab==='fit'?'on':''}">Fit Match</button>
+        <button data-slt="fit" class="${state.slTab==='fit'?'on':''}">Fit Twins</button>
         <button data-slt="ask" class="${state.slTab==='ask'?'on':''}">Ask Someone</button>
         <button data-slt="ai" class="${state.slTab==='ai'?'on':''}">AI Style Read</button>
       </div>
       <div class="sl-body" id="slBody">${renderSlTab(item, size)}</div>
     </div>
+    <div class="dr-block" id="drBlock">${renderDR(item)}</div>
   `;
 }
 
 function renderSlTab(item, size){
   if(state.slTab === "fit"){
     const fm = fitMatch(item, size);
+    const caption = fm.coldStart
+      ? `Size ${size} · too new a style for a Fit Twins read yet — your own history fills the gap below.`
+      : `Size ${size} · from shoppers with a fit history like yours, not a generic size chart.`;
+    const audit = fm.coldStart ? "" : `<div class="fit-audit">
+        <b>How this number was built:</b> cohort kept rate <b>${fm.cohortPct}%</b>
+        ${fm.adjustment === 0 ? "· no adjustment from your own history" : `· your own history moves it <b>${fm.adjustment > 0 ? "+" : ""}${fm.adjustment}</b>`}
+        → <b>${fm.score}% fit confidence for you</b>. The ${fm.cohortPct}% is the fact; the ${fm.score}% is that fact weighted for you.
+      </div>`;
     return `
       <div class="fit-score">${ring(fm.score, fm.band)}
-        <div class="fit-msg"><h4>${fm.headline}</h4><p>Size ${size} · computed from your own order history, not a generic size chart.</p></div>
+        <div class="fit-msg"><h4>${fm.headline}</h4><p>${caption}</p></div>
       </div>
+      ${audit}
       ${fm.factors.map(f=>`<div class="factor"><span class="k">${f.k}</span><span class="v">${f.v}</span></div>`).join("")}
     `;
   }
@@ -357,8 +436,10 @@ const NOTES = {
     {tag:"WHY THIS SCREEN", h:"Confidence, surfaced before the revisit stalls", p:"Each wishlist item shows a Second Look status at a glance — a fit-match read, or a flag that it's worth a closer look — so the blocker is visible the moment the shopper re-opens the wishlist, not buried three taps deep."}
   ],
   fit: [
-    {tag:"FIT MATCH", h:"A personal fit signal, not a generic size chart", p:"Computed from this shopper's own order and return history — brand-level and category-level — the two things the discovery engine and Priya's and Ananya's interviews both named as what a size chart alone can't tell you."},
-    {tag:"WHY PUBLISH THE FACTORS", h:"An opaque score is a marketing claim", p:"Every factor behind the number is shown, not just the number — the same discipline that made your reference project's own score credible rather than decorative."}
+    {tag:"FIT TWINS", h:"Other shoppers' outcomes, not one algorithm's guess", p:"Every completed order already tells Myntra whether that shopper kept or returned it. Fit Twins clusters shoppers by their own keep/return pattern across brands, then surfaces what people with a pattern like yours actually did with this exact item and size — evidence, not a prediction."},
+    {tag:"WHY NOT JUST A BETTER SIZE-CHART ALGORITHM", h:"A better guess is still a guess", p:"Myntra's existing Size & Fit Intelligence engine already predicts a size from body measurements — that's attribute-based prediction. Fit Twins is outcome-based: real shoppers, real keep/return decisions, for this SKU specifically. It's a different signal, not a better version of the same one — which is why it sits alongside the existing engine instead of replacing it."},
+    {tag:"COLD START → FIT JURY", h:"New styles start thin — the product fixes that", p:`Fewer than ${FIT_TWINS_THRESHOLD} twins yet and the read switches states honestly, leaning on the shopper's own history while it waits for enough completed orders to speak for the crowd.`},
+    {tag:"WHY PUBLISH THE FACTORS", h:"An opaque score is a marketing claim", p:"Every factor behind the number is shown, not just the number — a score you can audit is a score you can argue with — an unexplained number is just a marketing claim wearing a percentage sign."}
   ],
   ask: [
     {tag:"ASK SOMEONE", h:"The 'screenshot to a friend' workaround, made native", p:"Meera, Ritika and the discovery engine's real 'closet confidante' quote all describe the same behavior already happening on WhatsApp, untracked, with no guaranteed reply. This makes it a first-class, in-context loop instead."},
@@ -369,9 +450,14 @@ const NOTES = {
     {tag:"LIVE, NOT CANNED", h:"This is a real call to an AI model", p:"Click it — with your permission, this sends the item and occasion to that model and streams back an actual generated read. If you decline or it's unavailable, the rest of the prototype still works fully."}
   ]
 };
+const UNIVERSAL_NOTES = [
+  {tag:"DECISION RECEIPT", h:"A 'no' is data too, if you capture it", p:"Myntra has never had a wishlist-abandonment reason code — only a purchase or silence. One tap here turns 'not buying this' into the exact instrumentation Phase 0 needs, and into H3's test of whether public complaints match real behaviour."},
+  {tag:"TWO RECEIPTS, NOT ONE", h:"The distinction that keeps the mechanism honest", p:"A Decision Receipt is a NON-purchase, so it can never yield a keep/return outcome — it is demand and diagnostic data. Only a Fit Receipt (one tap after delivery: kept or returned, and why) attaches a real outcome to a real SKU and size, so only a Fit Receipt can grow a Fit Twins cohort or lift a style out of cold start. Collapsing the two into one 'receipt that feeds the flywheel' would be a nice story and a broken pipeline."}
+];
 function renderNotes(){
   const key = state.view==="wishlist" ? "wishlist" : state.slTab;
-  document.getElementById("notes").innerHTML = NOTES[key].map(n=>
+  const extra = state.view==="detail" ? UNIVERSAL_NOTES : [];
+  document.getElementById("notes").innerHTML = [...NOTES[key], ...extra].map(n=>
     `<div class="note-card"><span class="tag">${n.tag}</span><h3>${n.h}</h3><p>${n.p}</p></div>`
   ).join("");
 }
@@ -379,7 +465,7 @@ function renderNotes(){
 /* ---------------- wiring ---------------- */
 function wire(){
   document.querySelectorAll("[data-open]").forEach(el=>el.addEventListener("click", ()=>{
-    state.view="detail"; state.itemId=el.dataset.open; state.size=null; state.slTab="fit"; state.replies={}; state.asked=null;
+    state.view="detail"; state.itemId=el.dataset.open; state.size=null; state.slTab="fit"; state.replies={}; state.asked=null; state.drOpen=null;
     render();
   }));
   document.getElementById("backBtn").onclick = ()=>{ state.view="wishlist"; render(); };
@@ -391,6 +477,12 @@ function wire(){
   }));
   document.querySelectorAll("[data-ask]").forEach(el=>el.addEventListener("click", ()=>{
     state.asked = el.dataset.ask; render();
+  }));
+  document.querySelectorAll("[data-dropen]").forEach(el=>el.addEventListener("click", ()=>{
+    state.drOpen = state.drOpen===el.dataset.dropen ? null : el.dataset.dropen; render();
+  }));
+  document.querySelectorAll("[data-drpick]").forEach(el=>el.addEventListener("click", ()=>{
+    state.dr[el.dataset.dritem] = el.dataset.drpick; state.drOpen = null; render();
   }));
   document.querySelectorAll("[data-simreply]").forEach(el=>el.addEventListener("click", ()=>{
     const id = el.dataset.simreply;
